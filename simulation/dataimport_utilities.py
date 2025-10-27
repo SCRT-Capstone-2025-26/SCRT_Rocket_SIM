@@ -1,5 +1,6 @@
 import json
 import csv
+import dataclasses
 # import pandas as pd
 
 def read_thrust_data(filename):
@@ -32,6 +33,42 @@ def read_eng_thrustfile(filename):
             else:
                 array += [line.strip().split(" ")]
     return array
+
+
+@dataclasses.dataclass
+class DragPoint:
+    # radians from horizontal (ccw)
+    angle: float
+
+    # m/s
+    wind_speed: float
+
+    # degrees K
+    temperature: float
+
+    # m/s
+    ship_speed: float
+
+    # drag coefficient
+    drag: float
+    
+
+def read_drag_data(filename):
+    points = []
+
+    with open(filename, "r") as file:
+        for line in csv.reader(file):
+            point = DragPoint(
+                angle=line[0],
+                wind_speed=line[1],
+                temperature=line[2],
+                ship_speed=line[3],
+                drag=line[4]
+            )
+            points.append(point)
+
+    return points
+    
 
 if __name__ == "__main__":
     print(read_eng_thrustfile("sample_datasets/AeroTech_N2000W.eng"))
