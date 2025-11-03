@@ -84,30 +84,28 @@ We follow a **feature-branch workflow** built on a stable `main` branch.
 
 ## Commit Messages
 
-We use the **Conventional Commits** convention for clear history and automated changelog generation.
+We use brief description of what the code feature was what was changed and where it was changed.
 
 **Format:**
 
 ```
-<short summary>
+<did> <some feature> in <file/folder> by/using <method>
 ```
 
 **Types:**
 
-* `feat`: new feature
-* `fix`: bug fix
-* `docs`: documentation changes
-* `style`: code style / formatting
-* `refactor`: code refactor (no functional change)
-* `test`: adding or updating tests
-* `chore`: maintenance / build changes
+* `added`: new feature
+* `fixed`: bug fix
+* `documented`: documentation additions
+* `cleaned up`: code style / formatting
 
 **Examples:**
 
 ```
-add aerodynamic stability model
-correct pytest workflow path
-clarify setup instructions
+added aerodynamic stability model in stability.py using monte-carlo
+fixed pytest workflow path in CI files
+documented setup instructions in setup.txt 
+cleaned up simulation code in sim.py by adding comments
 ```
 
 Reference issues using `#<issue-number>` when applicable.
