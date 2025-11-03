@@ -263,4 +263,5 @@ For questions, reach out to the following (team email preferred):
 ---
 
 ### Guidelines Reviewed and Approved by:
+* Zane Othman-Gomez
 * Forrest Felsch
