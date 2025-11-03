@@ -84,12 +84,14 @@ We follow a **feature-branch workflow** built on a stable `main` branch.
 
 ## Commit Messages
 
-We use brief description of what the code feature was what was changed and where it was changed.
+We use the [**Conventional Commits**](https://www.conventionalcommits.org/en/v1.0.0/) convention for clear history and automated changelog generation.
 
 **Format:**
 
 ```
-<did> <some feature> in <file/folder> by/using <method>
+<type>: <description>
+
+<optional body>
 ```
 
 **Types:**
@@ -102,10 +104,18 @@ We use brief description of what the code feature was what was changed and where
 **Examples:**
 
 ```
-added aerodynamic stability model in stability.py using monte-carlo
-fixed pytest workflow path in CI files
-documented setup instructions in setup.txt 
-cleaned up simulation code in sim.py by adding comments
+feat: add aerodynamic stability model
+
+---
+
+test: correct pytest workflow path
+
+We moved the workflow folder as part of a previous refactor (see PR #X),
+but forgot to update the path in file.example.
+
+---
+
+docs: clarify setup instructions
 ```
 
 Reference issues using `#<issue-number>` when applicable.
@@ -116,7 +126,6 @@ Reference issues using `#<issue-number>` when applicable.
 
 We use **Ruff** for linting and code formatting.
 
-* Config file: `.ruff.toml` in the project root
 * Run checks before committing:
 
   ```bash
@@ -138,7 +147,7 @@ Testing ensures code reliability and performance for the simulation.
 
 * Tests live in the `/tests` directory.
 * Framework: **pytest**
-* Minimum required coverage: **≥90%**
+* Required coverage: **≥90%**
 
 ### Commands
 
@@ -162,7 +171,6 @@ Before submitting a PR:
 
 **PR Requirements**
 
-* Use the provided PR template in `.github/pull_request_template.md`
 * At least **one reviewer approval** required
 * All **CI checks** must pass before merge
 * **PR size guideline:** Prefer ≤ 400 lines changed; large PRs must be discussed before submission
@@ -184,7 +192,6 @@ We use **GitHub Actions** for Continuous Integration.
 
   * **Linting:** `ruff`
   * **Testing:** `pytest`
-  * **Build Validation:** `build.yml`
 * CI logs available via the **Actions tab** on GitHub.
 * Reruns are permitted only by the Sprint Lead or repo admin.
 
@@ -219,7 +226,7 @@ Versioning follows **Semantic Versioning (SemVer)**:
 
 1. Ensure all CI checks pass on `main`.
 2. Update `CHANGELOG.md` and version number in `pyproject.toml`.
-3. Tag the release:
+3. Tag the release, e.g.:
 
    ```bash
    git tag -a v1.2.0 -m "Stable rocket simulation release"
@@ -232,16 +239,10 @@ Versioning follows **Semantic Versioning (SemVer)**:
 
 ## Support & Contact
 
-For questions, reach out via **Discord** in the `#scrt-sim` channel or email the team contact below:
+For questions, reach out to the following (team email preferred):
 
 * **Team Contact:** Noah Unger-Schulz – [ungerscn@oregonstate.edu](mailto:ungerscn@oregonstate.edu)
 * **Partner Contact:** Cody Eutsler
-* **Next Review Date:** January 15, 2026
-
----
-
-**Definition of Done Reference:**
-All PRs and project deliverables must meet the [Definition of Done](./TEAM_CHARTER.md#definition-of-done-dod--quality-gates) outlined in the Team Charter.
 
 ---
 
@@ -251,12 +252,7 @@ All PRs and project deliverables must meet the [Definition of Done](./TEAM_CHART
 | ------------------------ | --------------------- | -------------------- |
 | **Linting**              | Ruff                  | `ruff check .`       |
 | **Formatting**           | Ruff (auto-fix)       | `ruff check . --fix` |
-| **Testing**              | pytest                | `pytest --cov`       |
+| **Testing**              | pytest                | `pytest`             |
 | **CI/CD**                | GitHub Actions        | Auto-run on PR       |
 | **Review Requirement**   | ≥1 approval           | via GitHub PR        |
 | **Coverage Requirement** | ≥90%                  | `pytest --cov`       |
-
----
-
-**End of CONTRIBUTING.md**
-
