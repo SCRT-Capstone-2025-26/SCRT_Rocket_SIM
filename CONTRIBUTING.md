@@ -259,3 +259,8 @@ For questions, reach out to the following (team email preferred):
 | **CI/CD**                | GitHub Actions        | Auto-run on PR       |
 | **Review Requirement**   | ≥1 approval           | via GitHub PR        |
 | **Coverage Requirement** | ≥90%                  | `pytest --cov`       |
+
+---
+
+### Guidelines Reviewed and Approved by:
+* Forrest Felsch
