@@ -1,8 +1,5 @@
-import matplotlib.pyplot as plt
-import time
 import numpy as np
-from math import *
-from utilities import *
+from math import ceil
 
 
 ## TODO please make look good
@@ -10,7 +7,6 @@ def scipyintegrate(u0,scheme,f,T,dt):
     print(u0,'u0')
     u=u0
     t=[i*dt for i in range(len(u))]
-    solution=scheme(lambda t0,u0:f(t0,u0) ,t[-1],u[-1],T)   
     while u[-1][0]>0:
         t+=[t[-1]+dt]
         print(u,'u')
@@ -38,9 +34,9 @@ def double_step(scheme):
     return lambda f,t,dt,u:scheme(f,t+dt/2,dt/2,u+[scheme(f,t,dt/2,u)])
 
 def integrate_adaptive(u0, scheme, f, T, dt,batch=1,scheme2=None,tol=None):
-    if tol==None:
+    if tol is None:
         tol=dt/1000
-    if scheme2==None:
+    if scheme2 is None:
         scheme2=double_step(scheme)
     u = [u0[0] for i in range(batch+1)]
     t = [0 for i in range(batch+1)]
