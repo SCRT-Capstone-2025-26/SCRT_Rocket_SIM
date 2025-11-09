@@ -1,0 +1,3 @@
+[submodule "simulation/beavs"]
+	path = simulation/beavs
+	url = git@github.com:SCRT-Capstone-2025-26/BEAVS5-2025-2026.git
