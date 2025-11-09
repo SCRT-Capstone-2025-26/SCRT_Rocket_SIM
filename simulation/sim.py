@@ -10,7 +10,8 @@ import scipy
 
 
 #initial conditions
-T=200;dt=.05;
+T=200
+dt=.05
 U0=np.array([0,0,0,0])#u[0]=height u[1]=velocity
 
 #physical constants
@@ -22,15 +23,18 @@ def Thrust(t):
     return 3000 if t<4 else 0
 g=-10
 Area=(pi/4)*(6/39)**2#TODO consider angle
+body_mass=15#TODO consider change in mass
 def motor_mass(t):
-    return 5
-body_mass=20
+    return 10
 
-M=lambda t:body_mass+motor_mass(t)
+def M(t):
+    return body_mass+motor_mass(t)
 
-Drag=lambda t,h,v,a:Area*AirDensity(h)*DrafCoeff(h,v,a)*v**2
+def Drag(t,h,v,a):
+    return Area*AirDensity(h)*DrafCoeff(h,v,a)*v**2
 #acceleration=-(A*rho*Cd*v^2+thrust)/m+g
-Accel=lambda t,h,v,a:(Drag(t,h,v,a)*cos(a)+Thrust(t))/M(t)+g
+def Accel(t,h,v,a):
+    return (Drag(t,h,v,a)*cos(a)+Thrust(t))/M(t)+g
 
 body_center=2
 motor_center=1
@@ -43,7 +47,8 @@ def Moment(M):
 def extension(t):
     return 0
 
-AngleAccel=lambda t,h,v,a:(cp(extension(t))-cg(t))*Drag(t,h,v,a)*sin(a)/Moment(M(t))
+def AngleAccel(t,h,v,a):
+    return (cp(extension(t))-cg(t))*Drag(t,h,v,a)*sin(a)/Moment(M(t))
 
 #FDS bs
 def F(t,u):#the derivative of the state space
