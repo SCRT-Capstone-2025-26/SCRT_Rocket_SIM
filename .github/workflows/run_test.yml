@@ -27,7 +27,6 @@ jobs:
           sudo apt-get install libboost-coroutine-dev
       - name: Lint with Ruff
         run: |
-          pip install ruff
           ruff check
       - name: Test with pytest
         run: |
