@@ -1,10 +1,5 @@
-import matplotlib.pyplot as plt
-import time
-import numpy as np
-from math import *
-from utilities import *
-from Butcher_Table import *
-from scipy import integrate as inte
+from utilities import iterate
+from Butcher_Table import Butcher_Table2
 
 
 

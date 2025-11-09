@@ -1,8 +1,5 @@
-import matplotlib.pyplot as plt
-import time
 import numpy as np
-from math import *
-from utilities import *
+from utilities import iterate
 
 def Butcher_Tableaux(a,c,b,N=20,Err=.00001):
     k=[0 for i in range(len(a))]

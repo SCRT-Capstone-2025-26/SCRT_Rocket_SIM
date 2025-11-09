@@ -1,12 +1,10 @@
-import matplotlib.pyplot as plt
-import time
 import numpy as np
-from math import *
 
 #convenient functions
-sign=lambda v:abs(v)/v if v!=0 else 0
-def npmap(l, f):
-    return np.array(list(map(f, list(l))))
+def sign(v):
+    return abs(v)/v if v!=0 else 0
+def npmap(arr, func):
+    return np.array(list(map(func, list(arr))))
 
 #given a function itertate f such that f(f(f(...))) converges find that 
 def iterate(f,guess,iter=20,err=0.00001):

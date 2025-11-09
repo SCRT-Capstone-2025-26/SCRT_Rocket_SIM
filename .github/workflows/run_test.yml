@@ -29,7 +29,6 @@ jobs:
         run: |
           pip install ruff
           ruff check
-        continue-on-error: true
       - name: Test with pytest
         run: |
           pytest -v -s
