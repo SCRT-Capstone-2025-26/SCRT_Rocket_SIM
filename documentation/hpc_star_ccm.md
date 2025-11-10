@@ -1,6 +1,6 @@
 # Oregon State Univeristy HPC Star CCM+ Data Acquisition 
 
-The below document is inteded to get oyu started on using the OSU HPC server to run
+The below document is inteded to get you started on using the OSU HPC server to run
 STAR-CCM+ for data acquisition. Future revisions will include the (currently in development)  automated data collection scripts.
 
 ## Getting OSU HPC Access
