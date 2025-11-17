@@ -1,6 +1,5 @@
 import csv
 import dataclasses
-# import pandas as pd
 
 def read_thrust_data(filename):
     array = []
