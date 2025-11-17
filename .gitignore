@@ -1,4 +1,4 @@
-# ignore potentially large run data
+# ignore potentially large run data folders
 */runs/*
 
 # Byte-compiled / optimized / DLL files
