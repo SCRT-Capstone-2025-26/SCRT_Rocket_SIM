@@ -15,7 +15,7 @@ dt=.05
 U0=np.array([0,0,0,0])#u[0]=height u[1]=velocity
 
 #physical constants
-def DrafCoeff(h,v):#TODO consider Angle
+def DrafCoeff(h,v,a):#TODO consider Angle
     return -sign(v)*0.55
 def AirDensity(h):
     return 1.2*.99988**h
@@ -48,11 +48,11 @@ def extension(t):
     return 0
 
 def AngleAccel(t,h,v,a):
- return (cp(extension(t))-cg(t))*Drag(t,h,v,a)*sin(a)/Moment(M(t))
+    return (cp(extension(t))-cg(t))*Drag(t,h,v,a)*sin(a)/Moment(M(t))
 
 #FDS bs
 def F(t,u):#the derivative of the state space
-    return np.array([u[1],Accel(t,u[0],u[1])])
+    return np.array([u[1],Accel(t,u[0],u[1],u[3]),AngleAccel(t,u[0],u[1],u[3]),u[2]])
 
 
 def run_integrate_adaptive(dt):
