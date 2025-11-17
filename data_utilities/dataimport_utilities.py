@@ -70,7 +70,7 @@ def read_drag_data(filename):
     
 
 if __name__ == "__main__":
-    print(read_eng_thrustfile("sample_datasets/AeroTech_N2000W.eng"))
+    print(read_eng_thrustfile("/sample_datasets/AeroTech_N2000W.eng"))
 
 
 
