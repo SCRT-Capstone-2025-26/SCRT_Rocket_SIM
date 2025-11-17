@@ -2,7 +2,7 @@ import numpy as np
 from math import ceil
 
 
-## TODO please make look good
+## TODO Add docstrings to function. Refactor for clarity.
 def scipyintegrate(u0,scheme,f,T,dt):
     print(u0,'u0')
     u=u0
