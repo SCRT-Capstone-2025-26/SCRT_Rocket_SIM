@@ -5,7 +5,7 @@ from dataimport_utilities import read_eng_thrustfile
 def eng_to_csv(src_filepath, dst_filepath, spec_filepath=None):
     thrust_data = read_eng_thrustfile(src_filepath)
     motor_spec = [list(thrust_data[0])] + [list(thrust_data[0].values())]
-    thrust_data = [["Time (s)", "Thrust (N)"]] + [thrust_data[1:]]
+    thrust_data = [["Time (s)", "Thrust (N)"]] + thrust_data[1:]
     # write thrust csv
     with open(dst_filepath, "w") as file:
         writer = csv.writer(file)
