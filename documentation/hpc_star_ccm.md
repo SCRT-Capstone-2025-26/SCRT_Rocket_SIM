@@ -47,7 +47,7 @@ We will run STAR-CCM+ from the STAR-CCM+ button in the Interactive Apps menu. Af
 
  - You can likely leave the "Account" option alone.
 
- - For hours, always request more (double) than you think you need. You can always end a session early, but when you run out of time there's no extensions and if you haven't exported the data, everything is lost. I would hesitate ever doing less than 12 hours. Note though that the length you request may impact your queue time before you get resources. Though this generally is only seen when you request multiple days, there isn't much difference below 12 hours.
+ - For hours, always request more (double) than you think you need. You can always end a session early, but when you run out of time there's no extensions and if you haven't exported the data, everything is lost. We recommend a minimum of twelve hours. Note though that the length you request may impact your queue time before you get resources. Though this generally is only seen when you request multiple days, there isn't much difference below 12 hours.
 
  - We recommend only requesting one node, but you can request 2. Generally inter-node communication is extremely slow (in the order millions of CPU cycles).
 
