@@ -59,7 +59,7 @@ We will run STAR-CCM+ from the STAR-CCM+ button in the Interactive Apps menu. Af
 
  - You can request a specific node, such as the one you found free in "Checking Available resources", but it likely doesn't matter.
 
-After everything is ready click "Launch". Then you will be taken to the "My Interactive Sessions" page. It will then say Queueing for a pit, then Preparing, then Running. If you requested your resources correctly and ensured there was space avaiable it should take from 30 seconds to less than 5 minutes. Sometimes it doesn't update even though it's ready, so refresh the page to check its status.
+After everything is ready click "Launch". Then you will be taken to the "My Interactive Sessions" page. It will then say Queueing for a bit, then Preparing, then Running. If you requested your resources correctly and ensured there was space avaiable it should take from 30 seconds to less than 5 minutes. Sometimes it doesn't update even though it's ready, so refresh the page to check its status.
 
 ### Using the remote desktop
 
