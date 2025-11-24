@@ -1,7 +1,5 @@
 #TODO add some common sense tests to verify this function
-import numpy as np
-from scipy.interpolate import BSpline, make_interp_spline
-import dataimport_utilities 
+from scipy.interpolate import  make_interp_spline
 from dataimport_utilities import np_thrust_data
 from eng_to_csv import eng_to_csv
 import os
