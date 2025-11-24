@@ -1,6 +1,5 @@
 import filecmp
 import os
-import sys
 from data_utilities.eng_to_csv import eng_to_csv
 
 
