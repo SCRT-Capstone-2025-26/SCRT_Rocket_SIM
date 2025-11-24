@@ -1,4 +1,5 @@
 import csv
+import numpy as np
 import dataclasses
 
 def read_thrust_data(filename):
@@ -7,6 +8,9 @@ def read_thrust_data(filename):
         for line in csv.reader(file):
             array += [line]
     return array
+
+def np_thrust_data(filename):
+    return np.array([[float(x) for x in y] for y in read_thrust_data(filename)[1:]])
 
 def read_eng_thrustfile(filename):
     array = []
