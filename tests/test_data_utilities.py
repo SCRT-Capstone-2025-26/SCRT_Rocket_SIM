@@ -1,8 +1,7 @@
 import filecmp
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "data_utilities"))
-from eng_to_csv import eng_to_csv
+from data_utilities.eng_to_csv import eng_to_csv
 
 
 
