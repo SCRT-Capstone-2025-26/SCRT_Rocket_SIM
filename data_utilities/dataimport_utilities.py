@@ -35,20 +35,17 @@ def read_eng_thrustfile(filename):
 
 @dataclasses.dataclass
 class DragPoint:
-    # radians from horizontal (ccw)
-    angle: float
+    # degrees from horizontal (ccw)
+    angle_of_attack: float
 
+    # TODO: add vertical component of velocity
     # m/s
-    wind_speed: float
-
-    # degrees K
-    temperature: float
-
-    # m/s
-    ship_speed: float
+    ship_velocity_x: float
 
     # drag coefficient
     drag: float
+
+    # TODO: wind speed and temperature
     
 
 def read_drag_data(filename):
@@ -57,11 +54,9 @@ def read_drag_data(filename):
     with open(filename, "r") as file:
         for line in csv.reader(file):
             point = DragPoint(
-                angle=line[0],
-                wind_speed=line[1],
-                temperature=line[2],
-                ship_speed=line[3],
-                drag=line[4]
+                angle_of_attack=line[0],
+                ship_velocity_x=line[1],
+                drag=line[2]
             )
             points.append(point)
 
