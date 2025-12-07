@@ -4,7 +4,7 @@ import ast
 import os
 import pathlib
 import re
-import subprocess
+import tempfile
 import tomllib
 
 from dataclasses import dataclass
@@ -18,6 +18,14 @@ MIN_PREFIX = "min:"
 MAX_PREFIX = "max:"
 INCREMENT_PREFIX = "inc:"
 UNITS_PREFIX = "units:"
+
+BATCH_SCRIPT_TEMPLATE = """\
+#!/bin/bash
+
+module load starccm+
+
+{starccm_command}
+"""
 
 @dataclass
 class Range:
@@ -74,19 +82,19 @@ def main():
     command.extend(["-e", config.outfile + ".err"])
 
     # bring in starccm
-    command.extend([str(config.starccm_path), "-batch", "RunStudyWithParameters.java", config.project])
+    starccm_command = [str(config.starccm_path), "-batch", "RunStudyWithParameters.java", config.project]
 
     # specify cores & gpu use
-    command.extend(["-np", str(config.cores)])
+    starccm_command.extend(["-np", str(config.cores)])
 
     if config.gpu:
-        command.extend(["-gpgpu", "auto"])
+        starccm_command.extend(["-gpgpu", "auto"])
 
     # output CSV file
-    command.extend(jvm_property_argument("outFile", config.csvfile))
+    starccm_command.extend(jvm_property_argument("outFile", config.csvfile))
 
     # design study
-    command.extend(jvm_property_argument("studyName", config.design_study))
+    starccm_command.extend(jvm_property_argument("studyName", config.design_study))
 
     parameters = []
     range_args = []
@@ -96,16 +104,28 @@ def main():
         for argpair in range.to_jvm_properties():
             range_args.extend(argpair)
 
-    command.extend(jvm_property_argument("studyParameters", ",".join(parameters)))
-    command.extend(range_args)
+    starccm_command.extend(jvm_property_argument("studyParameters", ",".join(parameters)))
+    starccm_command.extend(range_args)
+
+
+    # sbatch requires a shell script, so we create an executable temporary file with the contents we need
+    fd, script_path = tempfile.mkstemp(prefix="scrt-sim", text=True)
+    os.chmod(script_path, 0o755)
+
+    batch_contents = BATCH_SCRIPT_TEMPLATE.format(starccm_command=" ".join(starccm_command))
+    os.write(fd, batch_contents.encode())
+
+    # pass script to sbatch
+    command.append(script_path)
 
     if config.run:
         print("executing via slurm:")
-        print(" ".join(command))
-        os.execl(command)
+        os.execvp("sbatch", command)
     else:
         print("simulation command:")
-        print(" ".join(command))
+        print(command)
+        print("script:")
+        print(batch_contents)
 
 def parse_config() -> Config:
     parser = argparse.ArgumentParser()
