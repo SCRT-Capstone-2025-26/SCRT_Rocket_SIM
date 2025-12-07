@@ -27,6 +27,9 @@ public class RunStudyWithParameters extends MdxMacro {
   public void execute() {
     MdxDesignStudy designStudy = getDesignStudy();
 
+    // clear prior design study state
+    designStudy.clearDesignStudy();
+
     // set passed parameter ranges
     parameterManager = designStudy.getStudyParameters();
     setParameterRanges();
@@ -70,7 +73,7 @@ public class RunStudyWithParameters extends MdxMacro {
     Units units = unitsManager.getUnits(unitName);
 
     // get parameter value reference from project
-    MdxContinuousParameterValue parameterValue = getContinuousParameterValue();
+    MdxContinuousParameterValue parameterValue = getContinuousParameterValue(parameterName);
 
     // set parsed properties
     ScalarPhysicalQuantity minimum = parameterValue.getMinimumQuantity();
@@ -87,6 +90,7 @@ public class RunStudyWithParameters extends MdxMacro {
     String outFileName = System.getProperty("outFile", "drag_data.csv");
     String outPath = resolvePath(outFileName);
 
+    // TODO: float precision?
     designSet.exportCsvFile(outPath);
   }
 

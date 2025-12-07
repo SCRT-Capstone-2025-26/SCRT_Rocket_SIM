@@ -64,6 +64,10 @@ def main():
     command = ["sbatch"]
     command.extend(config.slurm_arguments)
 
+    # output arguments
+    command.extend(["-o", outfile + ".out"])
+    command.extend(["-e", outfile + ".err"])
+
     # bring in starccm
     command.extend([str(config.starccm_path), "-batch", "RunStudyWithParameters.java", config.project])
 
