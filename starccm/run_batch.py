@@ -35,16 +35,20 @@ class ParameterRange:
     units: str
 
     @classmethod
-    def from_name_dict(cls, name: str, properties: dict[str, typing.Union[float, str]]) -> ParameterRange:
+    def from_name_dict(
+        cls, name: str, properties: dict[str, typing.Union[float, str]]
+    ) -> ParameterRange:
         if " " in name:
-            raise BadParameterName("design parameters with spaces in their name are not currently supported")
+            raise BadParameterName(
+                "design parameters with spaces in their name are not currently supported"
+            )
         else:
             return cls(
                 parameter=name,
                 maximum=properties["maximum"],
                 minimum=properties["minimum"],
                 increment=properties["increment"],
-                units=properties["units"]
+                units=properties["units"],
             )
 
     def to_jvm_properties(self) -> list[str]:
@@ -70,7 +74,9 @@ class SimulationConfig:
     gpus: int
 
     @classmethod
-    def from_dict(cls, properties: dict[str, typing.Union[int, str]]) -> SimulationConfig:
+    def from_dict(
+        cls, properties: dict[str, typing.Union[int, str]]
+    ) -> SimulationConfig:
         starccm_version = properties["starccm-version"]
 
         return cls(
@@ -83,14 +89,16 @@ class SimulationConfig:
             gpus=properties.get("gpus", 0),
         )
 
+
 SlurmFlags = dict[str, str]
+
 
 @dataclass
 class Config:
     sim_config: SimulationConfig
     slurm_flags: SlurmFlags
     param_ranges: list[ParameterRange]
-    
+
 
 class BadStarCCMVersion(Exception):
     pass
@@ -132,12 +140,16 @@ def get_config_path() -> pathlib.Path:
     else:
         return config_path
 
+
 def parse_config(config_path: pathlib.Path) -> Config:
     with open(config_path, "rb") as config_file:
         config_dict = tomllib.load(config_file)
 
     sim_config = SimulationConfig.from_dict(config_dict["simulation"])
-    ranges = [ParameterRange.from_name_dict(*item) for item in config_dict["parameter"].items()]
+    ranges = [
+        ParameterRange.from_name_dict(*item)
+        for item in config_dict["parameter"].items()
+    ]
 
     slurm_flags = config_dict["slurm"]
 
@@ -147,12 +159,7 @@ def parse_config(config_path: pathlib.Path) -> Config:
     if sim_config.gpus:
         slurm_flags["gpus"] = str(sim_config.gpus)
 
-    return Config(
-        sim_config=sim_config,
-        slurm_flags=slurm_flags,
-        param_ranges=ranges
-    )
-        
+    return Config(sim_config=sim_config, slurm_flags=slurm_flags, param_ranges=ranges)
 
     slurm_dict = config_contents["slurm"]
     slurm_args = [f"--{key}={value}" for key, value in slurm_dict.items()]
@@ -176,6 +183,7 @@ def build_sbatch_command(config: Config) -> list[str]:
     command.append(script_path)
 
     return command
+
 
 def build_starccm_command(config: Config) -> list[str]:
     sim_config = config.sim_config
@@ -219,6 +227,7 @@ def build_starccm_command(config: Config) -> list[str]:
 
     return starccm_command
 
+
 def write_batch_script(starccm_command: list[str]) -> str:
     # sbatch requires a shell script, so we create an executable temporary file with the contents we need
     fd, script_path = tempfile.mkstemp(prefix="scrt-sim", text=True)
@@ -228,13 +237,11 @@ def write_batch_script(starccm_command: list[str]) -> str:
     quoted = [f'"{arg}"' if " " in arg else arg for arg in starccm_command]
 
     # write script from template to tempfile
-    batch_contents = BATCH_SCRIPT_TEMPLATE.format(
-        starccm_command=" ".join(quoted)
-    )
+    batch_contents = BATCH_SCRIPT_TEMPLATE.format(starccm_command=" ".join(quoted))
     os.write(fd, batch_contents.encode())
 
     return script_path
-    
+
 
 def starccm_version_to_path(version: str) -> pathlib.Path:
     base_path = pathlib.Path("/usr/local/apps/star-ccm+/")
@@ -245,8 +252,10 @@ def starccm_version_to_path(version: str) -> pathlib.Path:
     except StopIteration as e:
         raise BadStarCCMVersion(f"STAR-CCM+ version not found: {version}") from e
 
+
 def dict_to_options(options_dict: dict[str, str]) -> list[str]:
     return [f"--{key}={value}" for key, value in options_dict.items()]
+
 
 def jvm_property_argument(name: str, value: str) -> str:
     return ["-jvmargs", f"-D{name}={value}"]
