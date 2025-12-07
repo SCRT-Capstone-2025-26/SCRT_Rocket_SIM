@@ -1,0 +1,23 @@
+[simulation]
+starccm-version = "19.04.007"
+project = "squar-study.dmprj"
+console-output = "batched"
+csv-filename = "batched.csv"
+design-study = "angl"
+
+cpus = 12
+gpus = 1
+
+[slurm]
+job-name = "starccm-drag"
+account = "eecs"
+partition = "preempt"
+
+time = 15  # minutes
+mem = "10g"
+
+[parameter.RotateAngle]
+minimum = 0
+maximum = 10
+increment = 5
+units = "deg"
