@@ -90,7 +90,6 @@ public class RunStudyWithParameters extends MdxMacro {
     String outFileName = System.getProperty("outFile", "drag_data.csv");
     String outPath = resolvePath(outFileName);
 
-    // TODO: float precision?
     designSet.exportCsvFile(outPath);
   }
 
@@ -101,7 +100,7 @@ public class RunStudyWithParameters extends MdxMacro {
   }
 
   private double getDoubleProperty(String propertyName) {
-    // TODO: handle invlaid double case
+    // TODO: handle invalid double case
     String rawValue = System.getProperty(propertyName);
 
     return Double.parseDouble(rawValue);
