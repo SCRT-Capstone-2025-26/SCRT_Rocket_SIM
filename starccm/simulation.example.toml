@@ -1,0 +1,14 @@
+[simulation]
+starccm-version = "19.04.007"
+project = "path-to-design-manager-proj.dmprj"  # definitely update this
+output-filename = "drag-data"  # no file extension
+
+[slurm]
+job-name = "starccm-drag"
+account = "eecs"  # you'll probably have to change this
+partition = "preempt"  # definitely change this (dgx-h might be preferable for GPU but will probably take a while)
+
+time = 15  # minutes
+mem = "10g"
+gpus = 1
+cpus-per-task = 12
