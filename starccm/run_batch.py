@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import argparse
-import ast
 import os
 import pathlib
 import tempfile
@@ -160,9 +159,6 @@ def parse_config(config_path: pathlib.Path) -> Config:
         slurm_flags["gpus"] = str(sim_config.gpus)
 
     return Config(sim_config=sim_config, slurm_flags=slurm_flags, param_ranges=ranges)
-
-    slurm_dict = config_contents["slurm"]
-    slurm_args = [f"--{key}={value}" for key, value in slurm_dict.items()]
 
 
 def build_sbatch_command(config: Config) -> list[str]:
