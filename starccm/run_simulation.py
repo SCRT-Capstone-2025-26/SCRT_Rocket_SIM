@@ -11,7 +11,9 @@ from dataclasses import dataclass
 
 # matches e.g. 12 or 0.34
 DECIMAL_PATTERN = r"\d+(\.\d+)?"
-RANGE_RE = re.compile(rf"(?P<name>\w+):(?P<range>\[{DECIMAL_PATTERN},\s*{DECIMAL_PATTERN}]):(?P<increment>{DECIMAL_PATTERN}):(?P<units>[a-z]+)")
+RANGE_RE = re.compile(
+    rf"(?P<name>\w+):(?P<range>\[{DECIMAL_PATTERN},\s*{DECIMAL_PATTERN}]):(?P<increment>{DECIMAL_PATTERN}):(?P<units>[a-z]+)"
+)
 
 # prefixes for jvm property arguments
 MIN_PREFIX = "min:"
@@ -27,6 +29,7 @@ module load starccm+
 {starccm_command}
 """
 
+
 @dataclass
 class Range:
     parameter: str
@@ -36,9 +39,12 @@ class Range:
     units: str
 
     def to_jvm_properties(self):
+        """Converts this range to arguments setting JVM system properties expected by the STAR-CCM+ macro."""
         minimum = jvm_property_argument(MIN_PREFIX + self.parameter, str(self.minimum))
         maximum = jvm_property_argument(MAX_PREFIX + self.parameter, str(self.maximum))
-        increment = jvm_property_argument(INCREMENT_PREFIX + self.parameter, str(self.increment))
+        increment = jvm_property_argument(
+            INCREMENT_PREFIX + self.parameter, str(self.increment)
+        )
         units = jvm_property_argument(UNITS_PREFIX + self.parameter, self.units)
 
         return [minimum, maximum, increment, units]
@@ -82,7 +88,12 @@ def main():
     command.extend(["-e", config.outfile + ".err"])
 
     # bring in starccm
-    starccm_command = [str(config.starccm_path), "-batch", "RunStudyWithParameters.java", config.project]
+    starccm_command = [
+        str(config.starccm_path),
+        "-batch",
+        "RunStudyWithParameters.java",
+        config.project,
+    ]
 
     # specify cores & gpu use
     starccm_command.extend(["-np", str(config.cores)])
@@ -104,15 +115,18 @@ def main():
         for argpair in range.to_jvm_properties():
             range_args.extend(argpair)
 
-    starccm_command.extend(jvm_property_argument("studyParameters", ",".join(parameters)))
+    starccm_command.extend(
+        jvm_property_argument("studyParameters", ",".join(parameters))
+    )
     starccm_command.extend(range_args)
-
 
     # sbatch requires a shell script, so we create an executable temporary file with the contents we need
     fd, script_path = tempfile.mkstemp(prefix="scrt-sim", text=True)
     os.chmod(script_path, 0o755)
 
-    batch_contents = BATCH_SCRIPT_TEMPLATE.format(starccm_command=" ".join(starccm_command))
+    batch_contents = BATCH_SCRIPT_TEMPLATE.format(
+        starccm_command=" ".join(starccm_command)
+    )
     os.write(fd, batch_contents.encode())
 
     # pass script to sbatch
@@ -127,14 +141,29 @@ def main():
         print("script:")
         print(batch_contents)
 
+
 def parse_config() -> Config:
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-c", "--config", default="simulation.toml", help="the path to the simulation config (defualt %(default)s)")
-    parser.add_argument("--print-command", action="store_true", help="whether to just print the command and exit")
+    parser.add_argument(
+        "-c",
+        "--config",
+        default="simulation.toml",
+        help="the path to the simulation config (defualt %(default)s)",
+    )
+    parser.add_argument(
+        "--print-command",
+        action="store_true",
+        help="whether to just print the command and exit",
+    )
 
     # TODO: just move to config file? probably better ux
-    parser.add_argument("range", action="extend", nargs="+", help="the parameter range to set in format name:[min,max]:increment:unit (e.g., AoA:[0,10]:1:deg)")
+    parser.add_argument(
+        "range",
+        action="extend",
+        nargs="+",
+        help="the parameter range to set in format name:[min,max]:increment:unit (e.g., AoA:[0,10]:1:deg)",
+    )
 
     raw_args = parser.parse_args()
 
@@ -174,8 +203,9 @@ def parse_config() -> Config:
         gpu=slurm_dict.get("gpus", 0) > 0,
     )
 
+
 def starccm_version_to_path(version: str) -> str:
-    base_path = pathlib.Path("/usr/local/apps/star-ccm+/")    
+    base_path = pathlib.Path("/usr/local/apps/star-ccm+/")
     starccm_exes = base_path.glob(f"{version}*/STAR-CCM+*/star/bin/starccm+")
 
     try:
@@ -200,11 +230,13 @@ def parse_range(range_str: str):
         minimum=range_min,
         maximum=range_max,
         increment=increment,
-        units=units
+        units=units,
     )
+
 
 def jvm_property_argument(name: str, value: str) -> str:
     return ["-jvmargs", f"-D{name}={value}"]
+
 
 if __name__ == "__main__":
     main()
