@@ -2,6 +2,8 @@
 starccm-version = "19.04.007"
 project = "path-to-design-manager-proj.dmprj"  # definitely update this
 output-filename = "drag-data"  # no file extension
+csv-filename = "drag_data.csv"  # you might want to change this
+design-study = "Design Study Name"  # definitely change this
 
 [slurm]
 job-name = "starccm-drag"

@@ -4,6 +4,7 @@ import ast
 import os
 import pathlib
 import re
+import subprocess
 import tomllib
 
 from dataclasses import dataclass
@@ -40,8 +41,12 @@ class Config:
     starccm_path: str
     project: str
     outfile: str
+    csvfile: str
+    design_study: str
     ranges: [Range]
     slurm_arguments: [str]
+    cores: int
+    gpu: bool
     run: bool
 
 
@@ -65,19 +70,33 @@ def main():
     command.extend(config.slurm_arguments)
 
     # output arguments
-    command.extend(["-o", outfile + ".out"])
-    command.extend(["-e", outfile + ".err"])
+    command.extend(["-o", config.outfile + ".out"])
+    command.extend(["-e", config.outfile + ".err"])
 
     # bring in starccm
     command.extend([str(config.starccm_path), "-batch", "RunStudyWithParameters.java", config.project])
+
+    # specify cores & gpu use
+    command.extend(["-np", str(config.cores)])
+
+    if config.gpu:
+        command.extend(["-gpgpu", "auto"])
+
+    # output CSV file
+    command.extend(jvm_property_argument("outFile", config.csvfile))
+
+    # design study
+    command.extend(jvm_property_argument("studyName", config.design_study))
 
     parameters = []
     range_args = []
     for range in config.ranges:
         parameters.append(range.parameter)
-        range_args.extend(range.to_jvm_properties())
 
-    command.append(jvm_property_argument("studyParameters", ",".join(parameters)))
+        for argpair in range.to_jvm_properties():
+            range_args.extend(argpair)
+
+    command.extend(jvm_property_argument("studyParameters", ",".join(parameters)))
     command.extend(range_args)
 
     if config.run:
@@ -111,21 +130,28 @@ def parse_config() -> Config:
 
     starccm_path = starccm_version_to_path(sim_config["starccm-version"])
     outfile = sim_config["output-filename"]
+    csvfile = sim_config["csv-filename"]
     project = sim_config["project"]
+    design_study = sim_config["design-study"]
 
     ranges = []
     for range in raw_args.range:
         ranges.append(parse_range(range))
 
-    slurm_args = [f"--{key}={value}" for key, value in config_contents["slurm"].items()]
+    slurm_dict = config_contents["slurm"]
+    slurm_args = [f"--{key}={value}" for key, value in slurm_dict.items()]
 
     return Config(
         starccm_path=starccm_path,
         project=project,
         outfile=outfile,
+        csvfile=csvfile,
+        design_study=design_study,
         ranges=ranges,
         run=not raw_args.print_command,
-        slurm_arguments=slurm_args
+        slurm_arguments=slurm_args,
+        cores=slurm_dict["cpus-per-task"],
+        gpu=slurm_dict.get("gpus", 0) > 0,
     )
 
 def starccm_version_to_path(version: str) -> str:
@@ -158,7 +184,7 @@ def parse_range(range_str: str):
     )
 
 def jvm_property_argument(name: str, value: str) -> str:
-    return f"-jvmargs -D{name}={value}"
+    return ["-jvmargs", f"-D{name}={value}"]
 
 if __name__ == "__main__":
     main()

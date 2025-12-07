@@ -83,7 +83,7 @@ public class RunStudyWithParameters extends MdxMacro {
     maximum.setValueAndUnits(maxValue, units);
 
     ScalarPhysicalQuantity increment = parameterValue.getIncrementQuantity();
-    increment.setValueAndUnits(maxValue, units);
+    increment.setValueAndUnits(incrementValue, units);
   }
 
   private void saveStudyData(MdxDesignSet designSet) {
