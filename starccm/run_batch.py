@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 import argparse
-import os
 import pathlib
-import tempfile
+import shlex
+import subprocess
 import tomllib
 import typing
+
 
 from dataclasses import dataclass
 
@@ -117,9 +118,21 @@ def main():
 
     # assemble sbatch command and exec into it
     sbatch_command = build_sbatch_command(config)
+    starccm_command = build_starccm_command(config)
+    batch_script = make_batch_script(starccm_command)
 
     print("executing sbatch")
-    os.execvp("sbatch", sbatch_command)
+    completed_process = subprocess.run(
+        sbatch_command, input=batch_script, text=True, capture_output=True
+    )
+
+    print("sbatch output:")
+    print(completed_process.stdout)
+
+    # print stderr on non-success exit code
+    if completed_process.returncode:
+        print("sbatch error output:")
+        print(completed_process.stderr)
 
 
 def get_config_path() -> pathlib.Path:
@@ -171,13 +184,6 @@ def build_sbatch_command(config: Config) -> list[str]:
     command.extend(["--output", out_prefix + ".out"])
     command.extend(["--error", out_prefix + ".err"])
 
-    # build starccm study run command
-    starccm_command = build_starccm_command(config)
-
-    # put starccm command in batch script & pass to sbatch
-    script_path = write_batch_script(starccm_command)
-    command.append(script_path)
-
     return command
 
 
@@ -224,19 +230,11 @@ def build_starccm_command(config: Config) -> list[str]:
     return starccm_command
 
 
-def write_batch_script(starccm_command: list[str]) -> str:
-    # sbatch requires a shell script, so we create an executable temporary file with the contents we need
-    fd, script_path = tempfile.mkstemp(prefix="scrt-sim", text=True)
-    os.chmod(fd, 0o755)  # 0o755 -> rwxr-xr-x
+def make_batch_script(starccm_command: list[str]) -> str:
+    # shlex.join quotes arguments in case they contain e.g. spaces
+    quoted_command = shlex.join(starccm_command)
 
-    # quote any arguments that have spaces (e.g., due to parameter name having a space)
-    quoted = [f'"{arg}"' if " " in arg else arg for arg in starccm_command]
-
-    # write script from template to tempfile
-    batch_contents = BATCH_SCRIPT_TEMPLATE.format(starccm_command=" ".join(quoted))
-    os.write(fd, batch_contents.encode())
-
-    return script_path
+    return BATCH_SCRIPT_TEMPLATE.format(starccm_command=quoted_command)
 
 
 def starccm_version_to_path(version: str) -> pathlib.Path:
