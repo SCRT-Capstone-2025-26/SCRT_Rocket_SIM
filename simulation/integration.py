@@ -2,7 +2,12 @@ import numpy as np
 from math import ceil
 
 
-## TODO Add docstrings to function. Refactor for clarity.
+## Given an intial condition (u) a  scipy scheme 
+## a forcing function (f) an end time (T)
+## and a time step (dt)
+## This function records the time series made by the
+## output u such that u'=f and u(0)=u0
+
 def scipyintegrate(u0,scheme,f,T,dt):
     print(u0,'u0')
     u=u0
@@ -12,10 +17,6 @@ def scipyintegrate(u0,scheme,f,T,dt):
         print(u,'u')
         u+=[scheme(f,t[-1],dt,u)]
     return np.array(u),np.array(t)
-
-
-
-
 
 
 
