@@ -12,6 +12,7 @@ design-study = "Design Study Name"
 
 # output CSV filename with design study output for specified parameter ranges
 # it might be useful to put this in your hpc-share if testing a wide range of parameters
+# TODO: date prepend
 csv-filename = "simulation.csv"
 
 # STAR-CCM+ console output file name prefix (no file extension)
@@ -22,6 +23,11 @@ cpus = 12
 
 # number of GPUs to request (optional)
 gpus = 1
+
+# how many separate HPC jobs to split this simulation into
+# the jobs will be roughly the same size in terms of number of parameters
+# defaults to 1 (don't split into several jobs)
+split_into = 5
 
 
 # slurm parameters, for specifying requested resources & such

@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import argparse
+import dataclasses
+import math
 import pathlib
 import shlex
 import subprocess
@@ -51,6 +53,35 @@ class ParameterRange:
                 units=properties["units"],
             )
 
+    @property
+    def num_values(self) -> int:
+        """The number of parameter values contained in this range"""
+        return (self.maximum - self.minimum) // self.increment
+
+    def split(self, parts: int) -> list[ParameterRange]:
+        """Splits this range into `parts` smaller ranges of similar size"""
+
+        # ceil is used to allow the last part to have fewer values (rather than creating one more part than desired)
+        values_per_part = math.ceil(self.num_values / parts)
+
+        part_min = self.minimum
+
+        parts = []
+        for _ in range(parts):
+            # ensure maximum in each part is at most
+            part_max = min(
+                self.maximum, part_min + (values_per_part - 1) * self.increment
+            )
+
+            # create a copy of this range with the updated minimum and maximum
+            part = dataclasses.replace(self, minimum=part_min, maximum=part_max)
+            parts.append(part)
+
+            # set the next part minimum past the end of this range (again clamped to overarching maximum)
+            part_min = min(self.maximum, part_max + self.increment)
+
+        return parts
+
     def to_jvm_properties(self) -> list[str]:
         """Converts this range to arguments setting JVM system properties expected by the STAR-CCM+ macro."""
         minimum = jvm_property_argument(MIN_PREFIX + self.parameter, str(self.minimum))
@@ -62,6 +93,9 @@ class ParameterRange:
 
         return [minimum, maximum, increment, units]
 
+    def __repr__(self):
+        return f"ParameterRange {self.parameter} ({self.units}) on range [{self.minimum}, {self.maximum}] with increment {self.increment}"
+
 
 @dataclass
 class SimulationConfig:
@@ -72,6 +106,7 @@ class SimulationConfig:
     console_output: str
     cpus: int
     gpus: int
+    split_into: typing.Optional[int]
 
     @classmethod
     def from_dict(
@@ -87,6 +122,7 @@ class SimulationConfig:
             console_output=properties["console-output"],
             cpus=properties["cpus"],
             gpus=properties.get("gpus", 0),
+            split_into=properties.get("split_into", 1),
         )
 
 
@@ -98,6 +134,37 @@ class Config:
     sim_config: SimulationConfig
     slurm_flags: SlurmFlags
     param_ranges: list[ParameterRange]
+
+    def split_jobs(self) -> list[Config]:
+        if (num_jobs := self.sim_config.split_into) <= 1:
+            return [self]
+        else:
+            # get largest parameter range by number of values to split on
+            ranges_sorted_asc = sorted(self.param_ranges, key=ParameterRange.num_values)
+            remaining, largest_range = ranges_sorted_asc[:-1], ranges_sorted_asc[-1]
+
+            subranges = largest_range.split(num_jobs)
+
+            new_configs = []
+            for i, subrange in enumerate(subranges):
+                i_suffix = f"_{i}"
+
+                # update filenames to avoid clobbering previous output
+                updated_simconfig = dataclasses.replace(
+                    self.sim_config,
+                    console_output=self.sim_config.console_output + i_suffix,
+                    # TODO: place before csv rather than at very end
+                    csv_filename=self.sim_config.csv_filename + i_suffix,
+                )
+
+                config = dataclasses.replace(
+                    self,
+                    param_ranges=remaining + [subrange],
+                    sim_config=updated_simconfig,
+                )
+                new_configs.append(config)
+
+            return new_configs
 
 
 class BadStarCCMVersion(Exception):
@@ -116,23 +183,26 @@ def main():
     config_path = get_config_path()
     config = parse_config(config_path)
 
-    # assemble sbatch command and exec into it
-    sbatch_command = build_sbatch_command(config)
-    starccm_command = build_starccm_command(config)
-    batch_script = make_batch_script(starccm_command)
+    for job_config in config.split_jobs():
+        # TODO: print param range reprs for disambugation
 
-    print("executing sbatch")
-    completed_process = subprocess.run(
-        sbatch_command, input=batch_script, text=True, capture_output=True
-    )
+        # assemble sbatch command and exec into it
+        sbatch_command = build_sbatch_command(config)
+        starccm_command = build_starccm_command(config)
+        batch_script = make_batch_script(starccm_command)
 
-    print("sbatch output:")
-    print(completed_process.stdout)
+        print("executing sbatch")
+        completed_process = subprocess.run(
+            sbatch_command, input=batch_script, text=True, capture_output=True
+        )
 
-    # print stderr on non-success exit code
-    if completed_process.returncode:
-        print("sbatch error output:")
-        print(completed_process.stderr)
+        print("sbatch output:")
+        print(completed_process.stdout)
+
+        # print stderr on non-success exit code
+        if completed_process.returncode:
+            print("sbatch error output:")
+            print(completed_process.stderr)
 
 
 def get_config_path() -> pathlib.Path:
@@ -207,6 +277,7 @@ def build_starccm_command(config: Config) -> list[str]:
     # macro arguments via JVM system properties
 
     # output CSV file
+    # TODO: include date/shard in filename to avoid clobbering old output
     starccm_command.extend(jvm_property_argument("outFile", sim_config.csv_filename))
 
     # design study
