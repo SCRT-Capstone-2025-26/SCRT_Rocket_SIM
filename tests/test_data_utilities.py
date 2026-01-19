@@ -4,8 +4,6 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "data_utilities"))
 from eng_to_csv import eng_to_csv
 
-
-
 def test_eng_to_csv():
     eng_src = os.path.join(os.path.dirname(__file__), "..", "sample_datasets", "AeroTech_N2000W.eng")
 
