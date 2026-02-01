@@ -26,23 +26,25 @@ def thrust_init():
 
 
 def pointwise_interp():
-#TODO: use something that is actually Cd data
-    directory_name = "../data/runs/20251114_191130/input/"
-    try:
-        os.mkdir(directory_name)
-    except FileExistsError:
-        pass
-    src_filepath = "../sample_datasets/AeroTech_N2000W.eng"
-    dst_filepath = "../data/runs/20251114_191130/input/thrust_motor.csv"
-    spec_filepath = "../data/runs/20251114_191130/input/motor_spec.csv"
-    eng_to_csv(src_filepath, dst_filepath, spec_filepath)
+# #TODO: use something that is actually Cd data
+#     directory_name = "../data/runs/20251114_191130/input/"
+#     try:
+#         os.mkdir(directory_name)
+#     except FileExistsError:
+#         pass
+#     src_filepath = "../sample_datasets/AeroTech_N2000W.eng"
+#     dst_filepath = "../data/runs/20251114_191130/input/thrust_motor.csv"
+#     spec_filepath = "../data/runs/20251114_191130/input/motor_spec.csv"
+#     eng_to_csv(src_filepath, dst_filepath, spec_filepath)
+#
+#     Thrust_data=np_thrust_data("../data/runs/20251114_191130/input/thrust_motor.csv")
+#     timesteps=Thrust_data[:,0]
+#     Thrust=Thrust_data[:,1]
+#     data=[[[Thrust[i]*Thrust[j],timesteps[i],timesteps[j]] for j in range(len(Thrust))] for i in range(len(Thrust))]
+#     data=np.array(data)
+#     #TODO replace everything above with real data
 
-    Thrust_data=np_thrust_data("../data/runs/20251114_191130/input/thrust_motor.csv")
-    timesteps=Thrust_data[:,0]
-    Thrust=Thrust_data[:,1]
-    data=[[[Thrust[i]*Thrust[j],timesteps[i],timesteps[j]] for j in range(len(Thrust))] for i in range(len(Thrust))]
-    data=np.array(data)
-    #TODO replace everything above with real data
+
     print(data[:,0,1])
     firstinterps=[make_interp_spline(data[i,:,2], data[i,:,0],k=5) for i in range(len(data))]
     def secondinterp(x,y):
@@ -63,7 +65,6 @@ if __name__ == "__main__":
     x = np.linspace(a, b, N)
     y = np.linspace(a, b, N)
     X, Y = np.meshgrid(x, y)
-    print(X);print(Y)
     Z =np.array([[thrust2(X[i][j],Y[i][j]) for j in range(len(X[0]))] for i in range(len(X))])
     x = np.linspace(a, b, N-2)
     y = np.linspace(a, b, N-2)
@@ -90,4 +91,4 @@ if __name__ == "__main__":
     ax.set_ylabel('y')
     ax.set_zlabel('z')
 
-    plt.show()
+plt.show()
