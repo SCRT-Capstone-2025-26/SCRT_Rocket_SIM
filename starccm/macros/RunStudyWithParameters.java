@@ -95,6 +95,7 @@ public class RunStudyWithParameters extends MdxMacro {
 
   private MdxContinuousParameterValue getContinuousParameterValue(String parameterName) {
     // TODO: handle failed cast gracefully
+    // TODO: parameterbase getParameterType and switch based on that/don't directly return continuousparametervalue
     MdxStudyParameter parameter = (MdxStudyParameter) parameterManager.getStudyParameterBase(parameterName);
     return parameter.getContinuousParameterValue();
   }
