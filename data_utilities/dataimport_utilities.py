@@ -88,7 +88,6 @@ def read_drag_data_np(
     if plotting:
         import matplotlib.pyplot as plt
         import numpy as np
-        from mpl_toolkits.mplot3d import Axes3D # This import enables 3D plotting
         xs =Vars[0]
         ys =Vars[1]
         zs =Vars[2]
@@ -113,7 +112,7 @@ def read_drag_data(filename):
     line=read_drag_data_np(CSVs=[filename],
                            VarNames=['Extension','Mach','Drag Coeff']) 
     #TODO: changes VarNames to match the lines in DragPoint
-    for i in range(len(Vars[1])):
+    for i in range(len(line[1])):
         point = DragPoint(
             angle=line[0][i],
             wind_speed=line[1][i],

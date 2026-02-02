@@ -1,6 +1,6 @@
 #TODO add some common sense tests to verify this function
 from scipy.interpolate import  make_interp_spline
-from dataimport_utilities import np_thrust_data
+from dataimport_utilities import np_thrust_data,read_drag_data_np
 from eng_to_csv import eng_to_csv
 import os
 
@@ -43,9 +43,20 @@ def pointwise_interp():
 #     data=[[[Thrust[i]*Thrust[j],timesteps[i],timesteps[j]] for j in range(len(Thrust))] for i in range(len(Thrust))]
 #     data=np.array(data)
 #     #TODO replace everything above with real data
+    
+    [ext,mach,Cd]=read_drag_data_np()
+    data=[[Cd[i],ext[i],mach[i]] for i in range(len(Cd))]
+    # data=[[1,1,1],[2,2,2],[3,1,2],[4,2,3],[5,1,3],[6,2,1]]
+    data=sorted(data, key=lambda tup: tup[1])
+    data=sorted(data, key=lambda tup: tup[2])
+    length=1
+    while data[length][2]==data[0][2]:
+        length+=1
+    data=np.array(data).reshape((len(data)//length,length,3))
+    print(data,length)
+    # print(data[:,0,1])
 
-
-    print(data[:,0,1])
+    #CAUTION: DOES NOT WORK:
     firstinterps=[make_interp_spline(data[i,:,2], data[i,:,0],k=5) for i in range(len(data))]
     def secondinterp(x,y):
         xsteps=data[:,0,1]
