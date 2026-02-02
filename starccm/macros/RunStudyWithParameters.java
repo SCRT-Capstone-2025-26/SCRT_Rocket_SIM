@@ -69,7 +69,7 @@ public class RunStudyWithParameters extends MdxMacro {
   }
 
   private void setConstantParameters() {
-    String[] passedParameters = System.getProperty("constantParameters");
+    String passedParameters = System.getProperty("constantParameters");
 
     if (passedParameters != null) {
       for (String parameterName : passedParameters.split(",")) {
