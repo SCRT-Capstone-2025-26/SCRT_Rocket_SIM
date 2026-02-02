@@ -287,12 +287,16 @@ def build_starccm_command(config: Config) -> list[str]:
             parameter_args.extend(argpair)
 
     # tell the macro which study parameters it's modifying
-    starccm_command.extend(
-        jvm_property_argument("continuousParameters", ",".join(continuous))
-    )
-    starccm_command.extend(
-        jvm_property_argument("constantParameters", ",".join(constant))
-    )
+    if continuous:
+        starccm_command.extend(
+            jvm_property_argument("continuousParameters", ",".join(continuous))
+        )
+    if constant:
+        starccm_command.extend(
+            jvm_property_argument("constantParameters", ",".join(constant))
+        )
+
+    # also add in parameter values/units/etc.
     starccm_command.extend(parameter_args)
 
     return starccm_command

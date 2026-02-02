@@ -59,18 +59,22 @@ public class RunStudyWithParameters extends MdxMacro {
   }
 
   private void setContinuousParameters() {
-    String[] passedParameters = System.getProperty("continuousParameters").split(",");
+    String passedParameters = System.getProperty("continuousParameters");
 
-    for (String parameterName : passedParameters) {
-      setContinuousParameter(parameterName);
+    if (passedParameters != null) {
+      for (String parameterName : passedParameters.split(",")) {
+        setContinuousParameter(parameterName);
+      }
     }
   }
 
   private void setConstantParameters() {
-    String[] passedParameters = System.getProperty("constantParameters").split(",");
+    String[] passedParameters = System.getProperty("constantParameters");
 
-    for (String parameterName : passedParameters) {
-      setConstantParameter(parameterName);
+    if (passedParameters != null) {
+      for (String parameterName : passedParameters.split(",")) {
+        setConstantParameter(parameterName);
+      }
     }
   }
 
@@ -100,7 +104,7 @@ public class RunStudyWithParameters extends MdxMacro {
 
   private void setConstantParameter(String parameterName) {
     // get parameter value & units from JVM properties
-    double constValue = getDoubleProperty(CONST_PREFIX + parameterName);
+    double constValue = getDoubleProperty(CONSTANT_PREFIX + parameterName);
     Units units = getUnitsForParameter(parameterName);
 
     // ensure we're working with a constant parameter
@@ -127,10 +131,11 @@ public class RunStudyWithParameters extends MdxMacro {
   }
 
   private Units getUnitsForParameter(String parameterName) {
-    String unitName = System.getProperty(UNITS_PREFIX + parameterName);
+    // fetch units, defaulting to unitless (empty unit string)
+    String unitName = System.getProperty(UNITS_PREFIX + parameterName, "");
 
-    // fetch Units instance from unit manager, defaulting to a unitless quantity
-    Units units = unitsManager.getUnits(unitName, "");
+    // fetch Units instance from unit manager
+    Units units = unitsManager.getUnits(unitName);
 
     return units;
   }
