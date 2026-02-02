@@ -38,7 +38,7 @@ class ContinuousParameter:
     increment: float
     units: str
 
-    KEYS = frozenset({"minimum", "maximum", "increment", "units"})
+    KEYS = frozenset({"minimum", "maximum", "increment"})
 
     @classmethod
     def from_name_dict(
@@ -54,7 +54,7 @@ class ContinuousParameter:
                 maximum=properties["maximum"],
                 minimum=properties["minimum"],
                 increment=properties["increment"],
-                units=properties["units"],
+                units=properties.get("units", ""),
             )
 
     def to_jvm_properties(self) -> list[str]:
@@ -80,7 +80,7 @@ class ConstantParameter:
     value: float
     units: str
 
-    KEYS = frozenset({"value", "units"})
+    KEYS = frozenset({"value"})
 
     @classmethod
     def from_name_dict(cls, name: str, properties: ParameterDict):
@@ -92,7 +92,7 @@ class ConstantParameter:
             return cls(
                 name=name,
                 value=properties["value"],
-                units=properties["units"],
+                units=properties.get("units", ""),
             )
 
     def to_jvm_properties(self) -> list[str]:
@@ -222,7 +222,9 @@ def parse_config(config_path: pathlib.Path) -> Config:
 
 
 def parse_parameter(name: str, config_dict: dict) -> Parameter:
-    keys = frozenset(config_dict.keys())
+    # remove units from check since it's optional
+    keys = frozenset(config_dict.keys()) - {"units"}
+
     if keys == ContinuousParameter.KEYS:
         return ContinuousParameter.from_name_dict(name, config_dict)
     elif keys == ConstantParameter.KEYS:
@@ -281,7 +283,7 @@ def build_starccm_command(config: Config) -> list[str]:
         elif isinstance(parameter, ConstantParameter):
             constant.append(parameter.name)
 
-        for argpair in range.to_jvm_properties():
+        for argpair in parameter.to_jvm_properties():
             parameter_args.extend(argpair)
 
     # tell the macro which study parameters it's modifying
