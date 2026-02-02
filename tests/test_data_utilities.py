@@ -1,7 +1,7 @@
 import filecmp
 import os
 from data_utilities.eng_to_csv import eng_to_csv
-from data_utilities.dataimport_utilities import read_thrust_data
+from data_utilities.dataimport_utilities import read_thrust_data, read_eng_thrustfile
 
 # test dependent on thrust_sample.csv not changing
 def test_read_thrust_data():
@@ -14,7 +14,7 @@ def test_read_thrust_data():
 # test dependent on AeroTech_N2000W.eng not changing
 def test_read_eng_thrustfile():
     eng_src = os.path.join(os.path.dirname(__file__), "..", "sample_datasets", "AeroTech_N2000W.eng")
-    eng_data = read_thrust_data(eng_src)
+    eng_data = read_eng_thrustfile(eng_src)
     assert eng_data[0]["motor_name"] == "N2000W"
     assert eng_data[1][0] == "0.146"
 
