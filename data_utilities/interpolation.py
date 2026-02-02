@@ -102,6 +102,5 @@ if __name__ == "__main__":
     ax.set_ylabel('y')
     ax.set_zlabel('z')
 
-  plt.show()
-    thrust=thrust_init()
+    plt.show()
     print(.15,thrust(.15))
