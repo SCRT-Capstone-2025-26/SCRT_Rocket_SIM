@@ -9,7 +9,7 @@ def test_read_thrust_data():
     thrust_data = read_thrust_data(thrust_src)
     assert thrust_data[0][0] == "Time (s)"
     assert thrust_data[0][1] == "Thrust (N)"
-    assert thrust_data[11][0] == 10
+    assert thrust_data[11][0] == "10"
 
 # test dependent on AeroTech_N2000W.eng not changing
 def test_read_eng_thrustfile():
