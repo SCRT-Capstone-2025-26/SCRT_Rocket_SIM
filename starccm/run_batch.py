@@ -15,6 +15,7 @@ from dataclasses import dataclass
 MIN_PREFIX = "min:"
 MAX_PREFIX = "max:"
 INCREMENT_PREFIX = "inc:"
+CONSTANT_PREFIX = "const:"
 UNITS_PREFIX = "units:"
 
 BATCH_SCRIPT_TEMPLATE = """\
@@ -26,25 +27,30 @@ module load starccm+
 """
 
 
+ParameterDict = dict[str, typing.Union[float, str]]
+
+
 @dataclass
-class ParameterRange:
-    parameter: str
+class ContinuousParameter:
+    name: str
     minimum: float
     maximum: float
     increment: float
     units: str
 
+    KEYS = frozenset({"minimum", "maximum", "increment", "units"})
+
     @classmethod
     def from_name_dict(
-        cls, name: str, properties: dict[str, typing.Union[float, str]]
-    ) -> ParameterRange:
+        cls, name: str, properties: ParameterDict
+    ) -> ContinuousParameter:
         if " " in name:
             raise BadParameterName(
                 "design parameters with spaces in their name are not currently supported"
             )
         else:
             return cls(
-                parameter=name,
+                name=name,
                 maximum=properties["maximum"],
                 minimum=properties["minimum"],
                 increment=properties["increment"],
@@ -52,15 +58,55 @@ class ParameterRange:
             )
 
     def to_jvm_properties(self) -> list[str]:
-        """Converts this range to arguments setting JVM system properties expected by the STAR-CCM+ macro."""
-        minimum = jvm_property_argument(MIN_PREFIX + self.parameter, str(self.minimum))
-        maximum = jvm_property_argument(MAX_PREFIX + self.parameter, str(self.maximum))
+        """Converts this parameter to arguments setting JVM system properties expected by the STAR-CCM+ macro."""
+        minimum = jvm_property_argument(MIN_PREFIX + self.name, str(self.minimum))
+        maximum = jvm_property_argument(MAX_PREFIX + self.name, str(self.maximum))
         increment = jvm_property_argument(
-            INCREMENT_PREFIX + self.parameter, str(self.increment)
+            INCREMENT_PREFIX + self.name, str(self.increment)
         )
-        units = jvm_property_argument(UNITS_PREFIX + self.parameter, self.units)
 
-        return [minimum, maximum, increment, units]
+        properties = [minimum, maximum, increment]
+
+        if self.units:
+            units = jvm_property_argument(UNITS_PREFIX + self.name, self.units)
+            properties.append(units)
+
+        return properties
+
+
+@dataclass
+class ConstantParameter:
+    name: str
+    value: float
+    units: str
+
+    KEYS = frozenset({"value", "units"})
+
+    @classmethod
+    def from_name_dict(cls, name: str, properties: ParameterDict):
+        if " " in name:
+            raise BadParameterName(
+                "design parameters with spaces in their name are not currently supported"
+            )
+        else:
+            return cls(
+                name=name,
+                value=properties["value"],
+                units=properties["units"],
+            )
+
+    def to_jvm_properties(self) -> list[str]:
+        """Converts this parameter to arguments setting JVM system properties expected by the STAR-CCM+ macro."""
+        value = jvm_property_argument(CONSTANT_PREFIX + self.name, self.value)
+
+        if self.units:
+            units = jvm_property_argument(UNITS_PREFIX + self.name, self.units)
+            return [value, units]
+        else:
+            return [units]
+
+
+Parameter = typing.Union[ContinuousParameter, ConstantParameter]
 
 
 @dataclass
@@ -97,7 +143,7 @@ SlurmFlags = dict[str, str]
 class Config:
     sim_config: SimulationConfig
     slurm_flags: SlurmFlags
-    param_ranges: list[ParameterRange]
+    parameters: list[Parameter]
 
 
 class BadStarCCMVersion(Exception):
@@ -109,6 +155,10 @@ class ConfigNotFound(Exception):
 
 
 class BadParameterName(Exception):
+    pass
+
+
+class BadParameter(Exception):
     pass
 
 
@@ -158,10 +208,7 @@ def parse_config(config_path: pathlib.Path) -> Config:
         config_dict = tomllib.load(config_file)
 
     sim_config = SimulationConfig.from_dict(config_dict["simulation"])
-    ranges = [
-        ParameterRange.from_name_dict(*item)
-        for item in config_dict["parameter"].items()
-    ]
+    parameters = [parse_parameter(*item) for item in config_dict["parameter"].items()]
 
     slurm_flags = config_dict["slurm"]
 
@@ -171,7 +218,19 @@ def parse_config(config_path: pathlib.Path) -> Config:
     if sim_config.gpus:
         slurm_flags["gpus"] = str(sim_config.gpus)
 
-    return Config(sim_config=sim_config, slurm_flags=slurm_flags, param_ranges=ranges)
+    return Config(sim_config=sim_config, slurm_flags=slurm_flags, parameters=parameters)
+
+
+def parse_parameter(name: str, config_dict: dict) -> Parameter:
+    keys = frozenset(config_dict.keys())
+    if keys == ContinuousParameter.KEYS:
+        return ContinuousParameter.from_name_dict(name, config_dict)
+    elif keys == ConstantParameter.KEYS:
+        return ConstantParameter.from_name_dict(name, config_dict)
+    else:
+        raise BadParameter(
+            f"invalid values set for parameter {name}; please double check your configuration"
+        )
 
 
 def build_sbatch_command(config: Config) -> list[str]:
@@ -212,20 +271,27 @@ def build_starccm_command(config: Config) -> list[str]:
     # design study
     starccm_command.extend(jvm_property_argument("studyName", sim_config.design_study))
 
-    # assemble list of design parameters, and also set the range system properties
-    parameters = []
-    range_args = []
-    for range in config.param_ranges:
-        parameters.append(range.parameter)
+    # assemble list of constant/continuous design parameters, and also set the proper system properties
+    continuous = []
+    constant = []
+    parameter_args = []
+    for parameter in config.parameters:
+        if isinstance(parameter, ContinuousParameter):
+            continuous.append(parameter.name)
+        elif isinstance(parameter, ConstantParameter):
+            constant.append(parameter.name)
 
         for argpair in range.to_jvm_properties():
-            range_args.extend(argpair)
+            parameter_args.extend(argpair)
 
     # tell the macro which study parameters it's modifying
     starccm_command.extend(
-        jvm_property_argument("studyParameters", ",".join(parameters))
+        jvm_property_argument("continuousParameters", ",".join(continuous))
     )
-    starccm_command.extend(range_args)
+    starccm_command.extend(
+        jvm_property_argument("constantParameters", ",".join(constant))
+    )
+    starccm_command.extend(parameter_args)
 
     return starccm_command
 
