@@ -1,0 +1,56 @@
+[simulation]
+# make sure to match the version the project was created with
+# if you specify a newer version you will no longer be able to open the project in the older version
+starccm-version = "19.04.007"
+
+# project path relative to where run_batch.py is located
+# (only filename will assume same folder)
+project = "design-manager-proj.dmprj"
+
+# name of design study within the project
+design-study = "Design Study Name"
+
+# output CSV filename with design study output for specified parameter ranges
+# it might be useful to put this in your hpc-share if testing a wide range of parameters
+csv-filename = "simulation.csv"
+
+# STAR-CCM+ console output file name prefix (no file extension)
+console-output = "simulation"
+
+# number of CPUs to request
+cpus = 12
+
+# number of GPUs to request (optional)
+gpus = 1
+
+
+# slurm parameters, for specifying requested resources & such
+[slurm]
+job-name = "starccm-drag"
+account = "eecs"  # you'll probably have to change this
+partition = "preempt"  # definitely change this (dgxh might be preferable for GPU but will probably have a long wait)
+
+# various job resources
+# note: CPUs and GPUs are handled in the [simulation] section above
+time = 15  # minutes
+mem = "10g"
+
+# sample continuous-valued parameter
+# NOTE: spaces in design parameter names are not currently supported
+[parameter.AoA]
+# you must specify the range and increment value
+minimum = 0
+maximum = 30
+increment = 5
+
+# match what you would put in STAR-CCM+
+# (e.g., deg, radian, or rev for angles)
+units = "deg"
+
+
+# sample length parameter
+[parameter.BladeExtension]
+minimum = 0
+maximum = 20
+increment = 4
+units = "mm"  # length units now

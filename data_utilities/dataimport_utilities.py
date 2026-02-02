@@ -38,21 +38,19 @@ def read_eng_thrustfile(filename):
 
 
 @dataclasses.dataclass
-class DragPoint: #TODO:make this reflect actual CSVs
-    # radians from horizontal (ccw)
-    angle: float
 
+class DragPoint:#TODO:make this reflect actual CSVs
+    # degrees from horizontal (ccw)
+    angle_of_attack: float
+
+    # TODO: add vertical component of velocity
     # m/s
-    wind_speed: float
-
-    # degrees K
-    temperature: float
-
-    # m/s
-    ship_speed: float
+    ship_velocity_x: float
 
     # drag coefficient
     drag: float
+
+    # TODO: wind speed and temperature
     
 def read_csv_to_list_of_lists(filename):
     """Reads a CSV file and returns its content as a list of lists. (Specifically as Strings)"""
@@ -109,6 +107,7 @@ def read_drag_data_np(
 
 
 
+  
 def read_drag_data(filename):
     points=[]
     line=read_drag_data_np(CSVs=[filename],

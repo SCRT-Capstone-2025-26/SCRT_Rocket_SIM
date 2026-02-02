@@ -3,9 +3,9 @@ from scipy.interpolate import  make_interp_spline
 from dataimport_utilities import np_thrust_data
 from eng_to_csv import eng_to_csv
 import os
+
 import numpy as np
 import matplotlib.pyplot as plt
-
 #returns the estimated amount of force at a specific point in time
 def thrust_init():
 #TODO: make this file a non test file.
@@ -91,4 +91,6 @@ if __name__ == "__main__":
     ax.set_ylabel('y')
     ax.set_zlabel('z')
 
-plt.show()
+  plt.show()
+    thrust=thrust_init()
+    print(.15,thrust(.15))

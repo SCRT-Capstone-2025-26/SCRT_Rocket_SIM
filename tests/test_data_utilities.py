@@ -1,8 +1,23 @@
 import filecmp
 import os
-import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), "..", "data_utilities"))
-from eng_to_csv import eng_to_csv
+
+from data_utilities.eng_to_csv import eng_to_csv
+from data_utilities.dataimport_utilities import read_thrust_data, read_eng_thrustfile
+
+# test dependent on thrust_sample.csv not changing
+def test_read_thrust_data():
+    thrust_src = os.path.join(os.path.dirname(__file__), "..", "sample_datasets", "thrust_sample.csv")
+    thrust_data = read_thrust_data(thrust_src)
+    assert thrust_data[0][0] == "Time (s)"
+    assert thrust_data[0][1] == "Thrust (N)"
+    assert thrust_data[11][0] == "10"
+
+# test dependent on AeroTech_N2000W.eng not changing
+def test_read_eng_thrustfile():
+    eng_src = os.path.join(os.path.dirname(__file__), "..", "sample_datasets", "AeroTech_N2000W.eng")
+    eng_data = read_eng_thrustfile(eng_src)
+    assert eng_data[0]["motor_name"] == "N2000W"
+    assert eng_data[1][0] == "0.146"
 
 def test_eng_to_csv():
     eng_src = os.path.join(os.path.dirname(__file__), "..", "sample_datasets", "AeroTech_N2000W.eng")
