@@ -14,6 +14,8 @@ T=200
 dt=.05
 U0=np.array([0,0,0,0])#u[0]=height u[1]=velocity
 
+
+
 #physical constants
 def DrafCoeff(h,v,a):#TODO consider Angle
     return -sign(v)*0.55

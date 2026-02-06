@@ -65,17 +65,20 @@ def find_index(word,csv_data):
     # in the list of lists created by the 
     # read_csv_to_list_of_lists function
     for i in range(len(csv_data[0])):
-        if word in csv_data[0,i]:
+        if word in csv_data[0,i] and csv_data[1,i]!='null':
+            # print(csv_data[1,i])
             return i
 
+
+        
 
 def read_drag_data_np(
         CSVs=['../sample_datasets/SupSonicSweep5_013126_FullData.csv',    
               '../sample_datasets/SupSonicSweep2_BEAVS_012926_FullData.csv', 
               '../sample_datasets/SupSonicSweep2_012826_data.csv',  
-              '../sample_datasets/SupSonicSweep4_013026_FullData.csv'], # list of CSVs to be used
-        VarNames=['Extension','Mach','Drag Coeff'], # list of substrings in the headers for which you want data
-        plotting=False): # if you want to scatter plot 3 variables [x,y,z]
+              '../sample_datasets/SupSonicSweep4_013026_FullData.csv'],
+              # '../sample_datasets/NoaExt1DCdMach.csv'], # list of CSVs to be used
+        VarNames=['Extension','Mach','Drag Coeff']): # list of substrings in the headers for which you want data
     import numpy as np
     Vars=[[] for i in range(len(VarNames))] # initialize a list for each Variable
     for CSV in CSVs: 
@@ -85,7 +88,9 @@ def read_drag_data_np(
     for vari in range(len(Vars)):
         Vars[vari]=np.array(Vars[vari])
     #print(Vars)
-    if plotting:
+    return Vars
+
+def plot2d(Vars,VarNames=['Extension','Mach','Drag Coeff']):
         import matplotlib.pyplot as plt
         import numpy as np
         xs =Vars[0]
@@ -102,8 +107,6 @@ def read_drag_data_np(
         ax.set_zlabel(VarNames[2])
 # 5. Display the plot
         plt.show()
-    return Vars
-
 
 
   
@@ -122,11 +125,10 @@ def read_drag_data(filename):
         )
         points.append(point)
     return points
-    
 
 if __name__ == "__main__":
     print(read_eng_thrustfile("../sample_datasets/AeroTech_N2000W.eng"))
-    read_drag_data_np(plotting=True)
-
-
-
+    ext,mach,cd=read_drag_data_np()
+    ext2,cd2=read_drag_data_np(CSVs=['../sample_datasets/SimNoaExtDragCd.csv'],VarNames=['Extension','Drag Coeff'])
+    mach=np.array(list(mach)+[0.75 for i in range(len(ext2))])
+    plot2d([np.array(list(ext)+list(ext2)),mach,np.array(list(cd)+list(cd2))])
