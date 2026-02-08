@@ -4,27 +4,24 @@ import numpy as np
 from math import sin,cos,pi
 from utilities import sign
 from integration import scipyintegrate, integrate_adaptive
+from data_utilities.interpolation import Cd_init
 from FDS import Heun
 import scipy
 
 
 
-#initial conditions
-T=200
-dt=.05
-U0=np.array([0,0,0,0])#u[0]=height u[1]=velocity
 
 
 
 #physical constants
-def DrafCoeff(h,v,a):#TODO consider Angle
-    return -sign(v)*0.55
+
+
+
 def AirDensity(h):
     return 1.2*.99988**h
 def Thrust(t):
     return 3000 if t<4 else 0
 g=-10
-Area=(pi/4)*(6/39)**2#TODO consider angle
 body_mass=15#TODO consider change in mass
 def motor_mass(t):
     return 10
@@ -32,29 +29,17 @@ def motor_mass(t):
 def M(t):
     return body_mass+motor_mass(t)
 
-def Drag(t,h,v,a):
-    return Area*AirDensity(h)*DrafCoeff(h,v,a)*v**2
+Exts=[0,5,15,30]
+Cd=[Cd_init(ext) for ext in Exts]
+def Drag(h,v):
+    return AirDensity(h)*Cd[exti](v/343)
 #acceleration=-(A*rho*Cd*v^2+thrust)/m+g
-def Accel(t,h,v,a):
-    return (Drag(t,h,v,a)*cos(a)+Thrust(t))/M(t)+g
-
-body_center=2
-motor_center=1
-def cg(t):
-    return (body_mass*body_center+motor_mass(t)*motor_center)/M(t)
-def cp(extension):
-    return 0.5
-def Moment(M):
-    return M*10
-def extension(t):
-    return 0
-
-def AngleAccel(t,h,v,a):
-    return (cp(extension(t))-cg(t))*Drag(t,h,v,a)*sin(a)/Moment(M(t))
+def Accel(t,h,v):
+    return (Drag(h,v)+Thrust(t))/M(t)+g
 
 #FDS bs
 def F(t,u):#the derivative of the state space
-    return np.array([u[1],Accel(t,u[0],u[1],u[3]),AngleAccel(t,u[0],u[1],u[3]),u[2]])
+    return np.array([u[1],Accel(t,u[0],u[1])])
 
 
 def run_integrate_adaptive(dt):
@@ -66,6 +51,10 @@ def run_scipy(dt):
 
 
 def run(headless=False):
+#initial conditions
+    T=200
+    dt=.05
+    U0=np.array([0,0])#u[0]=height u[1]=velocity
     #run code
     start=[]
     start+=[(time.perf_counter())]
