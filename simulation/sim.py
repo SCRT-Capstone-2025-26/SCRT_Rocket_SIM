@@ -4,6 +4,8 @@ import numpy as np
 from math import sin,cos,pi
 from utilities import sign
 from integration import scipyintegrate, integrate_adaptive
+# from data_utilities.dataimport_utilities import np_thrust_data,read_drag_data_np
+
 from data_utilities.interpolation import Cd_init
 from FDS import Heun
 import scipy
@@ -31,31 +33,43 @@ def M(t):
 
 Exts=[0,5,15,30]
 Cd=[Cd_init(ext) for ext in Exts]
-def Drag(h,v):
+def Drag(h,v,exti):
     return AirDensity(h)*Cd[exti](v/343)
 #acceleration=-(A*rho*Cd*v^2+thrust)/m+g
-def Accel(t,h,v):
-    return (Drag(h,v)+Thrust(t))/M(t)+g
+def Accel(t,h,v,exti):
+    return (Drag(h,v,exti)+Thrust(t))/M(t)+g
 
 #FDS bs
-def F(t,u):#the derivative of the state space
-    return np.array([u[1],Accel(t,u[0],u[1])])
+def Fext(t,u,exti):#the derivative of the state space
+    return np.array([u[1],Accel(t,u[0],u[1],exti)])
 
 
-def run_integrate_adaptive(dt):
+def run_integrate_adaptive(dt,exti=0):
+    T=200
+    dt=.05
+    U0=np.array([0,0])#u[0]=height u[1]=velocity
+    def F(t,u):
+       return Fext(t,u,exti) 
     return integrate_adaptive([U0,U0],Heun,F,T,dt)
 
 
-def run_scipy(dt):
+def run_scipy(dt,exti=0):
+    T=200
+    dt=.05
+    U0=np.array([0,0])#u[0]=height u[1]=velocity
+    def F(t,u):
+       return Fext(t,u,exti) 
     return scipyintegrate([U0,U0], scipy.integrate.RK45, F, T, dt)
 
 
-def run(headless=False):
+def run(headless=False,exti=0):
 #initial conditions
     T=200
     dt=.05
     U0=np.array([0,0])#u[0]=height u[1]=velocity
     #run code
+    def F(t,u):
+       return Fext(t,u,exti) 
     start=[]
     start+=[(time.perf_counter())]
     U,Time=run_integrate_adaptive(dt/1000)

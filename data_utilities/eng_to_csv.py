@@ -1,5 +1,5 @@
 import csv
-from dataimport_utilities import read_eng_thrustfile
+from .dataimport_utilities import read_eng_thrustfile
 
 # Converts a .eng file to a .csv file
 def eng_to_csv(src_filepath, dst_filepath, spec_filepath=None):
