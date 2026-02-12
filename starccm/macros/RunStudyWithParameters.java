@@ -6,7 +6,9 @@ import star.mdx.MdxDesignStudy;
 import star.mdx.MdxStudyParameterManager;
 import star.mdx.MdxStudyParameter;
 import star.mdx.MdxStudyParameterBase;
+import static star.mdx.MdxStudyParameterBase.ParameterType;
 import star.mdx.MdxContinuousParameterValue;
+import star.mdx.MdxConstantParameterValue;
 import star.mdx.MdxSuccessfulDesignSet;
 import star.mdx.MdxDesignSetManager;
 import star.mdx.MdxDesignSet;
@@ -20,6 +22,7 @@ public class RunStudyWithParameters extends MdxMacro {
   private final String MAX_PREFIX = "max:";
   private final String INCREMENT_PREFIX = "inc:";
   private final String UNITS_PREFIX = "units:";
+  private final String CONSTANT_PREFIX = "const:";
   
   MdxStudyParameterManager parameterManager;
   UnitsManager unitsManager;
@@ -30,9 +33,10 @@ public class RunStudyWithParameters extends MdxMacro {
     // clear prior design study state
     designStudy.clearDesignStudy();
 
-    // set passed parameter ranges
+    // set passed parameter values/ranges
     parameterManager = designStudy.getStudyParameters();
-    setParameterRanges();
+    setContinuousParameters();
+    setConstantParameters();
 
     // run design study
     designStudy.runDesignStudy();
@@ -54,26 +58,38 @@ public class RunStudyWithParameters extends MdxMacro {
     return project.getDesignStudyManager().getDesignStudy(studyName);
   }
 
-  private void setParameterRanges() {
-    String[] passedParameters = System.getProperty("studyParameters").split(",");
+  private void setContinuousParameters() {
+    String passedParameters = System.getProperty("continuousParameters");
 
-    for (String parameterName : passedParameters) {
-      setParameterRange(parameterName);
+    if (passedParameters != null) {
+      for (String parameterName : passedParameters.split(",")) {
+        setContinuousParameter(parameterName);
+      }
     }
   }
 
-  private void setParameterRange(String parameterName) {
+  private void setConstantParameters() {
+    String passedParameters = System.getProperty("constantParameters");
+
+    if (passedParameters != null) {
+      for (String parameterName : passedParameters.split(",")) {
+        setConstantParameter(parameterName);
+      }
+    }
+  }
+
+  private void setContinuousParameter(String parameterName) {
     // parse continuous parameter properties
     double minValue = getDoubleProperty(MIN_PREFIX + parameterName);
     double maxValue = getDoubleProperty(MAX_PREFIX + parameterName);
     double incrementValue = getDoubleProperty(INCREMENT_PREFIX + parameterName);
 
     // including units
-    String unitName = System.getProperty(UNITS_PREFIX + parameterName);
-    Units units = unitsManager.getUnits(unitName);
+    Units units = getUnitsForParameter(parameterName);
 
     // get parameter value reference from project
-    MdxContinuousParameterValue parameterValue = getContinuousParameterValue(parameterName);
+    MdxStudyParameter parameter = (MdxStudyParameter) getParameterOfType(parameterName, ParameterType.CONTINUOUS);
+    MdxContinuousParameterValue parameterValue = parameter.getContinuousParameterValue();
 
     // set parsed properties
     ScalarPhysicalQuantity minimum = parameterValue.getMinimumQuantity();
@@ -86,6 +102,20 @@ public class RunStudyWithParameters extends MdxMacro {
     increment.setValueAndUnits(incrementValue, units);
   }
 
+  private void setConstantParameter(String parameterName) {
+    // get parameter value & units from JVM properties
+    double constValue = getDoubleProperty(CONSTANT_PREFIX + parameterName);
+    Units units = getUnitsForParameter(parameterName);
+
+    // ensure we're working with a constant parameter
+    MdxStudyParameter parameter = (MdxStudyParameter) getParameterOfType(parameterName, ParameterType.CONSTANT);
+    MdxConstantParameterValue parameterValue = parameter.getConstantParameterValue();
+    
+    // set value and units of constant parameter
+    ScalarPhysicalQuantity baseline = parameterValue.getBaselineQuantity();
+    baseline.setValueAndUnits(constValue, units);
+  }
+
   private void saveStudyData(MdxDesignSet designSet) {
     String outFileName = System.getProperty("outFile", "drag_data.csv");
     String outPath = resolvePath(outFileName);
@@ -93,16 +123,31 @@ public class RunStudyWithParameters extends MdxMacro {
     designSet.exportCsvFile(outPath);
   }
 
-  private MdxContinuousParameterValue getContinuousParameterValue(String parameterName) {
-    // TODO: handle failed cast gracefully
-    MdxStudyParameter parameter = (MdxStudyParameter) parameterManager.getStudyParameterBase(parameterName);
-    return parameter.getContinuousParameterValue();
-  }
-
   private double getDoubleProperty(String propertyName) {
     // TODO: handle invalid double case
     String rawValue = System.getProperty(propertyName);
 
     return Double.parseDouble(rawValue);
+  }
+
+  private Units getUnitsForParameter(String parameterName) {
+    // fetch units, defaulting to unitless (empty unit string)
+    String unitName = System.getProperty(UNITS_PREFIX + parameterName, "");
+
+    // fetch Units instance from unit manager
+    Units units = unitsManager.getUnits(unitName);
+
+    return units;
+  }
+
+  private MdxStudyParameterBase getParameterOfType(String parameterName, ParameterType paramType) {
+    MdxStudyParameterBase parameter = parameterManager.getStudyParameterBase(parameterName);
+
+    // set parameter type as necessary
+    if (parameter.getParameterType() != paramType) {
+      parameter.setParameterType(paramType);
+    }
+
+    return parameter;
   }
 }

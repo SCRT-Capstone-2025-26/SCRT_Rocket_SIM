@@ -53,4 +53,17 @@ units = "deg"
 minimum = 0
 maximum = 20
 increment = 4
+
 units = "mm"  # length units now
+
+
+# sample constant parameter
+[parameter.NumRounds]
+
+# only required key is value
+value = 450
+
+# units is omitted here since this parameter is meant to be unitless
+# equivalent to:
+# 
+# units = ""
