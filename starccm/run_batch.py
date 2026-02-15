@@ -215,7 +215,7 @@ def parse_config(config_path: pathlib.Path) -> Config:
         # also hash config to avoid overwriting files from other runs
         config_hash = hashlib.file_digest(config_file, hashlib.sha256)
 
-    config_hash_prefix = config_hash.hex()[:CONFIG_HASH_PREFIX_LEN]
+    config_hash_prefix = config_hash.hexdigest()[:CONFIG_HASH_PREFIX_LEN]
 
     sim_config = SimulationConfig.from_dict(config_dict["simulation"])
 
