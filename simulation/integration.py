@@ -34,15 +34,15 @@ def integrate(u0, scheme, f, T, dt):
 def double_step(scheme):
     return lambda f,t,dt,u:scheme(f,t+dt/2,dt/2,u+[scheme(f,t,dt/2,u)])
 
-def integrate_adaptive(u0, scheme, f, T, dt,batch=1,scheme2=None,tol=None):
+def integrate_adaptive(u0, scheme, f, T, dt,t0=0,batch=1,scheme2=None,tol=None):
     if tol is None:
         tol=dt/1000
     if scheme2 is None:
         scheme2=double_step(scheme)
     u = [u0[0] for i in range(batch+1)]
-    t = [0 for i in range(batch+1)]
+    t = [t0 for i in range(batch+1)]
     print(u)
-    while t[-1]<T:
+    while t[-1]<T+t0:
         err=np.linalg.norm(scheme(f,t[-1],dt,u)-scheme2(f,t[-1],dt,u))
         #err/=np.linalg.norm(scheme(f,t[-1],dt,u))
         if err>tol:

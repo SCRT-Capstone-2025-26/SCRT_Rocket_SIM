@@ -48,13 +48,13 @@ def Fext(t,u,exti):#the derivative of the state space
     return np.array([u[1],Accel(t,u[0],u[1],exti)])
 
 
-def run_integrate_adaptive(dt,exti=3):
+def run_integrate_adaptive(dt,exti=3,t0=0):
     T=200
     dt=.05
     U0=np.array([0,0])#u[0]=height u[1]=velocity
     def F(t,u):
        return Fext(t,u,exti) 
-    return integrate_adaptive([U0,U0],Heun,F,T,dt)
+    return integrate_adaptive([U0,U0],Heun,F,T,dt,t0=t0)
 
 
 def run_scipy(dt,exti=3):
@@ -66,8 +66,15 @@ def run_scipy(dt,exti=3):
     return scipyintegrate([U0,U0], scipy.integrate.RK45, F, T, dt)
 
 
-# def apogee(exti,U0,T,dt=.05):
-
+def apogee(exti,U0,T,t0,dt=.05):
+    T=200
+    dt=.05
+    U0=np.array([0,0])#u[0]=height u[1]=velocity
+    #run code
+    def F(t,u):
+       return Fext(t,u,exti) 
+    U,Time=run_integrate_adaptive(dt/1000,exti=exti,t0=t0)
+    return np.max(U[:,0])
 
 def run(headless=False,exti=3):
 #initial conditions
