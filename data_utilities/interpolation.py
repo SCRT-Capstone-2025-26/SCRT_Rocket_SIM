@@ -35,12 +35,14 @@ def fix_ext(drag_data,fixed_ext,exti=0,machi=1):
     return good_data
 
 def Cd_init(fixed_ext):
-    drag_data=np.array(fix_ext(read_drag_data_np(VarNames=['Extension','Mach','Drag of all']), fixed_ext)[1:])
+    drag_data=np.array(fix_ext(read_drag_data_np(VarNames=['Extension','Mach','Drag of all','Altitude']), fixed_ext)[1:])
     sort_indices = np.argsort(drag_data[0,:])
     drag_data=drag_data[:,sort_indices]
-    print(drag_data)
+    #print(drag_data)
+    def AirDensity(h):
+        return 1.2*.99988**h
     machsteps=drag_data[0,:]
-    drag=drag_data[1,:]
+    drag=np.array([drag_data[1,i]/AirDensity(drag_data[2,i]*3.28084) for i in range(len(drag_data[1,:]))])
     return make_interp_spline(machsteps, drag,k=1)
 
 

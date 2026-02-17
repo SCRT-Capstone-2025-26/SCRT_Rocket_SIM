@@ -8,10 +8,10 @@ from math import ceil
 ## This function records the time series made by the
 ## output u such that u'=f and u(0)=u0
 
-def scipyintegrate(u0,scheme,f,T,dt):
+def scipyintegrate(u0,scheme,f,T,dt,t0=0):
     print(u0,'u0')
     u=u0
-    t=[i*dt for i in range(len(u))]
+    t=[i*dt+t0 for i in range(len(u))]
     while u[-1][0]>0:
         t+=[t[-1]+dt]
         print(u,'u')
