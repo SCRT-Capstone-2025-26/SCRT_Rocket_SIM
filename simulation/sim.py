@@ -84,23 +84,14 @@ def run(headless=False,exti=3):
     #run code
     def F(t,u):
        return Fext(t,u,exti) 
-    start=[]
-    start+=[(time.perf_counter())]
-    U,Time=run_integrate_adaptive(dt/1000,exti=exti)
-    start+=[(time.perf_counter())]
-    height=np.max(U[:,0])
-    print(height,exti)
-    print(start[-1]-start[-2])
-    # U45,Time45=run_scipy(dt)
-    # start+=[(time.perf_counter())]
-    # print(start[-1]-start[-2])
+    U45,Time45=run_scipy(dt,exti=exti)
 
     if not headless:
         # plotting
-        # plt.plot(Time45,U45[:,0],label="dt/1000")
-        # plt.plot(Time45,U45[:,1],label="dt/1000")
-        plt.plot(Time,U[:,0],label="Height")
-        plt.plot(Time,U[:,1],label="Velocity")
+        plt.plot(Time45,U45[:,0],label="scipyh")
+        plt.plot(Time45,U45[:,1],label="scipyv")
+        # plt.plot(Time,U[:,0],label="Height")
+        # plt.plot(Time,U[:,1],label="Velocity")
         plt.legend()
         plt.xlabel("time (s)")
         plt.ylabel("velocity(m/s)/Height(m)")

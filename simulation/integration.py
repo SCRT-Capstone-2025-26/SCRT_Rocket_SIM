@@ -1,6 +1,7 @@
 import numpy as np
 from math import ceil
-
+import scipy
+import matplotlib.pyplot as plt
 
 ## Given an intial condition (u) a  scipy scheme 
 ## a forcing function (f) an end time (T)
@@ -9,14 +10,18 @@ from math import ceil
 ## output u such that u'=f and u(0)=u0
 
 def scipyintegrate(u0,scheme,f,T,dt,t0=0):
-    print(u0,'u0')
-    u=u0
-    t=[i*dt+t0 for i in range(len(u))]
+    # print(u0,'u0')
+    u=[u0]
+    t=[t0]
+    solution=scheme(f,t0,u0,T,max_step=dt)
     while u[-1][0]>0:
-        t+=[t[-1]+dt]
-        print(u,'u')
-        u+=[scheme(f,t[-1],dt,u)]
+        solution.step()
+        t+=[solution.t]
+        u+=[solution.y]
+        print(t[-1],u[-1])
     return np.array(u),np.array(t)
+    # return np.array(solution.y),np.array(solution.t)
+
 
 
 
@@ -58,3 +63,10 @@ def integrate_adaptive(u0, scheme, f, T, dt,t0=0,batch=1,scheme2=None,tol=None):
             if u[-1][0]<0 or t[-1]>T:
                 return np.array(u),np.array(t)
     return np.array(u),np.array(t)
+
+
+if __name__ == '__main__':
+    u,t=scipyintegrate(np.array([1.]),scipy.integrate.RK45,lambda t,u:np.array([[u-5*t]]),200,0.001,t0=-0.5)
+    print(t,u[:,0])
+    plt.plot(t,u[:,0])
+    plt.show()
