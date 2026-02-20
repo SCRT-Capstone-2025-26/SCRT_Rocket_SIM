@@ -14,11 +14,11 @@ def scipyintegrate(u0,scheme,f,T,dt,t0=0):
     u=[u0]
     t=[t0]
     solution=scheme(f,t0,u0,T,max_step=dt)
-    while t[-1]<T:# u[-1][0]>0 or 
+    while u[-1][1]>=-10 and t[-1]<T:#  
         solution.step()
         t+=[solution.t]
         u+=[solution.y]
-        # print(t[-1],u[-1])
+        # print(t[-1],u[-1][0])
     return np.array(u),np.array(t)
     # return np.array(solution.y),np.array(solution.t)
 
