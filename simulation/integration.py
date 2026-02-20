@@ -14,11 +14,11 @@ def scipyintegrate(u0,scheme,f,T,dt,t0=0):
     u=[u0]
     t=[t0]
     solution=scheme(f,t0,u0,T,max_step=dt)
-    while u[-1][0]>0:
+    while t[-1]<T:# u[-1][0]>0 or 
         solution.step()
         t+=[solution.t]
         u+=[solution.y]
-        print(t[-1],u[-1])
+        # print(t[-1],u[-1])
     return np.array(u),np.array(t)
     # return np.array(solution.y),np.array(solution.t)
 
@@ -66,7 +66,7 @@ def integrate_adaptive(u0, scheme, f, T, dt,t0=0,batch=1,scheme2=None,tol=None):
 
 
 if __name__ == '__main__':
-    u,t=scipyintegrate(np.array([1.,0]),scipy.integrate.RK45,lambda t,u:np.array([-u[1],sin(u[0])]),200,0.001,t0=-0.5)
+    u,t=scipyintegrate(np.array([1.,0]),scipy.integrate.RK45,lambda t,u:np.array([-u[1],sin(u[0])]),200,0.01,t0=-0.5)
     print(t,u[:,0])
     plt.plot(t,u[:,0])
     plt.show()
