@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import argparse
+import datetime
+import hashlib
 import pathlib
 import shlex
 import subprocess
@@ -10,6 +12,9 @@ import typing
 
 
 from dataclasses import dataclass
+
+# number of hex characters to use of config hash
+CONFIG_HASH_PREFIX_LEN = 8
 
 # prefixes for jvm property arguments
 MIN_PREFIX = "min:"
@@ -114,8 +119,7 @@ class SimulationConfig:
     starccm_path: pathlib.Path
     project: str
     design_study: str
-    csv_filename: str
-    console_output: str
+    job_prefix: str
     cpus: int
     gpus: int
 
@@ -129,8 +133,7 @@ class SimulationConfig:
             starccm_path=starccm_version_to_path(starccm_version),
             project=properties["project"],
             design_study=properties["design-study"],
-            csv_filename=properties["csv-filename"],
-            console_output=properties["console-output"],
+            job_prefix=properties["job-prefix"],
             cpus=properties["cpus"],
             gpus=properties.get("gpus", 0),
         )
@@ -144,6 +147,7 @@ class Config:
     sim_config: SimulationConfig
     slurm_flags: SlurmFlags
     parameters: list[Parameter]
+    file_hash: bytes
 
 
 class BadStarCCMVersion(Exception):
@@ -206,8 +210,20 @@ def get_config_path() -> pathlib.Path:
 def parse_config(config_path: pathlib.Path) -> Config:
     with open(config_path, "rb") as config_file:
         config_dict = tomllib.load(config_file)
+        config_file.seek(0)
+
+        # also hash config to avoid overwriting files from other runs
+        config_hash = hashlib.file_digest(config_file, hashlib.sha256)
+
+    config_hash_prefix = config_hash.hexdigest()[:CONFIG_HASH_PREFIX_LEN]
 
     sim_config = SimulationConfig.from_dict(config_dict["simulation"])
+
+    # add ISO 8601 date and config hash to job prefix to avoid collisions
+    sim_config.job_prefix += (
+        "_" + datetime.date.today().strftime("%G%m%d") + "_" + config_hash_prefix
+    )
+
     parameters = [parse_parameter(*item) for item in config_dict["parameter"].items()]
 
     slurm_flags = config_dict["slurm"]
@@ -218,7 +234,15 @@ def parse_config(config_path: pathlib.Path) -> Config:
     if sim_config.gpus:
         slurm_flags["gpus"] = str(sim_config.gpus)
 
-    return Config(sim_config=sim_config, slurm_flags=slurm_flags, parameters=parameters)
+    # append prefix of config hash to job name
+    slurm_flags["job-name"] = sim_config.job_prefix
+
+    return Config(
+        sim_config=sim_config,
+        slurm_flags=slurm_flags,
+        parameters=parameters,
+        file_hash=config_hash,
+    )
 
 
 def parse_parameter(name: str, config_dict: dict) -> Parameter:
@@ -241,7 +265,7 @@ def build_sbatch_command(config: Config) -> list[str]:
     command.extend(dict_to_options(config.slurm_flags))
 
     # output arguments
-    out_prefix = config.sim_config.console_output
+    out_prefix = config.sim_config.job_prefix
     command.extend(["--output", out_prefix + ".out"])
     command.extend(["--error", out_prefix + ".err"])
 
@@ -268,7 +292,9 @@ def build_starccm_command(config: Config) -> list[str]:
     # macro arguments via JVM system properties
 
     # output CSV file
-    starccm_command.extend(jvm_property_argument("outFile", sim_config.csv_filename))
+    starccm_command.extend(
+        jvm_property_argument("outFile", sim_config.job_prefix + ".csv")
+    )
 
     # design study
     starccm_command.extend(jvm_property_argument("studyName", sim_config.design_study))
