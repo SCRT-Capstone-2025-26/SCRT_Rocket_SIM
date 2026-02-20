@@ -1,5 +1,5 @@
 import numpy as np
-from math import ceil
+from math import ceil,sin
 import scipy
 import matplotlib.pyplot as plt
 
@@ -66,7 +66,7 @@ def integrate_adaptive(u0, scheme, f, T, dt,t0=0,batch=1,scheme2=None,tol=None):
 
 
 if __name__ == '__main__':
-    u,t=scipyintegrate(np.array([1.]),scipy.integrate.RK45,lambda t,u:np.array([[u-5*t]]),200,0.001,t0=-0.5)
+    u,t=scipyintegrate(np.array([1.,0]),scipy.integrate.RK45,lambda t,u:np.array([-u[1],sin(u[0])]),200,0.001,t0=-0.5)
     print(t,u[:,0])
     plt.plot(t,u[:,0])
     plt.show()
