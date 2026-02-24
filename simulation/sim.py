@@ -45,7 +45,7 @@ def Accel(t,h,v,exti):
 
 #FDS bs
 def Fext(t,u,exti):#the derivative of the state space
-    return np.array([u[1]*cos(u[2]),Accel(t,u[0],u[1],exti),-g*sin(u[2])/(u[1]+Accel(t,u[0],u[1],exti))])
+    return np.array([u[1]*cos(u[2]),Accel(t,u,exti),-g*sin(u[2])/(u[1]+Accel(t,u[0],u[1],exti))])
 
 
 def run_integrate_adaptive(dt,exti=3,t0=0):
