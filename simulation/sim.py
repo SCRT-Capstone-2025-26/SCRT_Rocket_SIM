@@ -57,38 +57,36 @@ def run_integrate_adaptive(dt,exti=3,t0=0):
     return integrate_adaptive([U0,U0],Heun,F,T,dt,t0=t0)
 
 
-def run_scipy(dt,exti=3,t0=0):
+def run_scipy(dt,exti=3,t0=0,
+            U0=np.array([0,0])#u[0]=height u[1]=velocity
+              ):
     T=200
     dt=.05
-    U0=np.array([0,0])#u[0]=height u[1]=velocity
     def F(t,u):
        return Fext(t,u,exti) 
     return scipyintegrate(U0, scipy.integrate.RK45, F, T, dt,t0=t0)
 
 def apogee(exti,U0,T,t0,dt=.0005):
-    T=200
-    dt=.05
-    U0=np.array([0,0])#u[0]=height u[1]=velocity
-    #run code
     def F(t,u):
        return Fext(t,u,exti) 
-    U,Time=run_scipy(dt,exti=exti,t0=t0)
+    U,Time=run_scipy(dt,exti=exti,t0=t0,U0=U0)
     return np.max(U[:,0])
 
-def run(headless=False,exti=3):
+def run(headless=False,exti=3,U0=np.array([0,0]),t0=4):
 #initial conditions
     T=200
     dt=.05
-    U0=np.array([0,0])#u[0]=height u[1]=velocity
     #run code
     def F(t,u):
        return Fext(t,u,exti) 
-    U45,Time45=run_scipy(dt,exti=exti)
+    U45,Time45=run_scipy(dt,U0=U0,exti=exti,t0=t0)
 
     if not headless:
         # plotting
         plt.plot(Time45,U45[:,0],label="scipyh")
         plt.plot(Time45,U45[:,1],label="scipyv")
+        plt.plot(Time45,[10000/3.3 for t in Time45],label="goalheight")
+        
         # plt.plot(Time,U[:,0],label="Height")
         # plt.plot(Time,U[:,1],label="Velocity")
         plt.legend()
@@ -98,10 +96,34 @@ def run(headless=False,exti=3):
         # plt.plot(np.array(Dragdata),label="Dragdata")
         # plt.show()
 
+def mach2v(V):
+    #TODO add more decimal points
+    return [343.*v for v in V]
 
 if __name__ == '__main__':
-    run(exti=0)
-    run(exti=1)
-    run(exti=2)
-    run(exti=3)
-    plt.show()
+    # run(exti=0,U0=np.array([0,0]),t0=0)
+    # run(exti=1,U0=np.array([0,0]),t0=0)
+    # run(exti=2,U0=np.array([0,0]),t0=0)
+    # run(exti=3,U0=np.array([0,0]),t0=0)
+    # plt.show()
+    heights=[30*i+2000 for i in range(30)]
+    machs=[0.1+0.03*i for i in range(30)]
+    print("Heights:",heights)
+    print("Machs:",machs)
+    lookup=[[] for hi in heights]
+    for hi in range(len(heights)):
+        for vi in range(len(machs)):
+            U0=np.array([heights[hi],mach2v(machs)[vi]])
+            # plt.clf()
+            # run(exti=0,U0=U0)
+            # run(exti=1,U0=U0)
+            # run(exti=2,U0=U0)
+            # run(exti=3,U0=U0)
+            # plt.pause(10**-100)
+            apogees=[]
+            for exti in range(len(Exts)):
+                apogees+=[abs(apogee(exti,U0,200,t0=4)-10000/3.3)]
+            print(U0,[float(a) for a in apogees])
+            plt.show()
+            lookup[hi]+=[int(np.array(apogees).argmin())]
+    print("Lookup:",np.array(lookup))
