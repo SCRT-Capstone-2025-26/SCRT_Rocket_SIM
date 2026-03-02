@@ -75,7 +75,14 @@ def find_index(word,csv_data):
 #     CSVs: a list of csv filepath strings.
 #     VarNames: a list of substrings in the headers you want data from
 #         Default values of ['Extension','Mach','Drag Coeff']
-def read_drag_data_np(CSVs, VarNames=['Extension','Mach','Drag Coeff']): # list of substrings in the headers for which you want data
+def read_drag_data_np(CSVs = ['../sample_datasets/SupSonicSweep5_013126_FullData.csv',    
+              '../sample_datasets/SupSonicSweep2_BEAVS_012926_FullData.csv', 
+              '../sample_datasets/SupSonicSweep2_012826_data.csv',  
+              '../sample_datasets/SupSonicSweep4_013026_FullData.csv'],
+              # '../sample_datasets/SimNoaMaxStyle.csv'],
+
+              # '../sample_datasets/NoaExt1DCdMach.csv'], # list of CSVs to be used
+              VarNames=['Extension','Mach','Drag Coeff']): # list of substrings in the headers for which you want data
     import numpy as np
     Vars=[[] for i in range(len(VarNames))] # initialize a list for each Variable
     for CSV in CSVs: 
@@ -108,21 +115,15 @@ def read_drag_data(filename):
 if __name__ == "__main__":
     # Example trustfile reading
     print(read_eng_thrustfile("../sample_datasets/AeroTech_N2000W.eng"))
-    plot2d(read_drag_data_np())
-    plot2d(read_drag_data_np(VarNames=['Extension','Mach','Drag of all']))
-    # ext,mach,cd=read_drag_data_np()
-    # ext2,cd2=read_drag_data_np(CSVs=['../sample_datasets/SimNoaExtDragCd.csv'],VarNames=['Extension','Drag Coeff'])
-    # mach=np.array(list(mach)+[0.75 for i in range(len(ext2))])
-    # plot2d([np.array(list(ext)+list(ext2)),mach,np.array(list(cd)+list(cd2))])
 
 
     # Example read_drag_data_np
     # read_drag_data_np(
-    #     CSVs=['../sample_datasets/SupSonicSweep5_013126_FullData.csv',    
-    #           '../sample_datasets/SupSonicSweep2_BEAVS_012926_FullData.csv', 
-    #           '../sample_datasets/SupSonicSweep2_012826_data.csv',  
-    #           '../sample_datasets/SupSonicSweep4_013026_FullData.csv'],
-    #           # '../sample_datasets/SimNoaMaxStyle.csv'],
+        # CSVs=['../sample_datasets/SupSonicSweep5_013126_FullData.csv',    
+        #       '../sample_datasets/SupSonicSweep2_BEAVS_012926_FullData.csv', 
+        #       '../sample_datasets/SupSonicSweep2_012826_data.csv',  
+        #       '../sample_datasets/SupSonicSweep4_013026_FullData.csv'],
+        #       # '../sample_datasets/SimNoaMaxStyle.csv'],
 
-    #           # '../sample_datasets/NoaExt1DCdMach.csv'], # list of CSVs to be used
+        #       # '../sample_datasets/NoaExt1DCdMach.csv'], # list of CSVs to be used
     #     VarNames=['Extension','Mach','Drag Coeff'])
