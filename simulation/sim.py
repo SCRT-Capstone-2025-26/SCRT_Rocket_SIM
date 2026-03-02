@@ -33,19 +33,20 @@ def M(t):
 
 Exts=[0,5,15,30]
 Cd=[Cd_init(ext) for ext in Exts]
-def Drag(h,v,exti,t):
-    if t<4:
+def Drag(h,v,theta,exti,t):
+    if t<4 or theta*180/pi>20:
         exti=0
     global Dragdata
     Dragdata+=[AirDensity(h)*Cd[exti](v/343)]
     return AirDensity(h)*Cd[exti](v/343)
 #acceleration=-(A*rho*Cd*v^2+thrust)/m+g
-def Accel(t,h,v,exti):
-    return (-Drag(h,v,exti,t)+Thrust(t))/M(t)+g
+def Accel(t,u,exti):
+    h,v,theta=u
+    return (-Drag(h,v,theta,exti,t)+Thrust(t))/M(t)+g
 
 #FDS bs
 def Fext(t,u,exti):#the derivative of the state space
-    return np.array([u[1]*cos(u[2]),Accel(t,u,exti),-g*sin(u[2])/(u[1]+Accel(t,u[0],u[1],exti))])
+    return np.array([u[1]*cos(u[2]),Accel(t,u,exti),-g*sin(u[2])/(u[1]+Accel(t,u,exti))])
 
 
 def run_integrate_adaptive(dt,exti=3,t0=0):
@@ -108,9 +109,13 @@ if __name__ == '__main__':
         run(exti=2,U0=np.array([0,0,1/15]),t0=0)
         run(exti=3,U0=np.array([0,0,1/15]),t0=0)
         plt.show()
+    elif False:
+        run(exti=3,U0=np.array([0,0,20*pi/180]),t0=0)
+        run(exti=3,U0=np.array([0,0,0]),t0=0)
+        plt.show()
     elif True:
-        run(exti=0,U0=np.array([0,0,pi/180]),t0=0)
-        run(exti=0,U0=np.array([0,0,0]),t0=0)
+        run(exti=3,U0=np.array([0,0,5*pi/180]),t0=0)
+        run(exti=0,U0=np.array([0,0,5*pi/180]),t0=0)
         plt.show()
     else:
         heights=[200*i+2000 for i in range(5)]
