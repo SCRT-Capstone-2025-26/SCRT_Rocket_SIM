@@ -1,8 +1,5 @@
 import matplotlib.pyplot as plt
-import time
 import numpy as np
-from math import sin,cos,pi
-from utilities import sign
 from integration import scipyintegrate, integrate_adaptive
 # from data_utilities.dataimport_utilities import np_thrust_data,read_drag_data_np
 

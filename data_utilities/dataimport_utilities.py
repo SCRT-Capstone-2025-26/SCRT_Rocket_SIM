@@ -108,12 +108,6 @@ def read_drag_data(filename):
 if __name__ == "__main__":
     # Example trustfile reading
     print(read_eng_thrustfile("../sample_datasets/AeroTech_N2000W.eng"))
-    plot2d(read_drag_data_np())
-    plot2d(read_drag_data_np(VarNames=['Extension','Mach','Drag of all']))
-    # ext,mach,cd=read_drag_data_np()
-    # ext2,cd2=read_drag_data_np(CSVs=['../sample_datasets/SimNoaExtDragCd.csv'],VarNames=['Extension','Drag Coeff'])
-    # mach=np.array(list(mach)+[0.75 for i in range(len(ext2))])
-    # plot2d([np.array(list(ext)+list(ext2)),mach,np.array(list(cd)+list(cd2))])
 
 
     # Example read_drag_data_np
