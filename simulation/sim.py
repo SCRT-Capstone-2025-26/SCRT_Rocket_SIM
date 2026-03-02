@@ -63,9 +63,9 @@ def run_scipy(dt,exti=3,t0=0):
     return scipyintegrate(U0, scipy.integrate.RK45, F, T, dt,t0=t0)
 
 def apogee(exti,U0,T,t0,dt=.0005):
-    T=200
+    # T=200
     dt=.05
-    U0=np.array([0,0])#u[0]=height u[1]=velocity
+    # U0=np.array([0,0])#u[0]=height u[1]=velocity
     #run code
     def F(t,u):
        return Fext(t,u,exti) 
@@ -74,9 +74,9 @@ def apogee(exti,U0,T,t0,dt=.0005):
 
 def run(headless=False,exti=3):
 #initial conditions
-    T=200
+    # T=200
     dt=.05
-    U0=np.array([0,0])#u[0]=height u[1]=velocity
+    # U0=np.array([0,0])#u[0]=height u[1]=velocity
     #run code
     def F(t,u):
        return Fext(t,u,exti) 
