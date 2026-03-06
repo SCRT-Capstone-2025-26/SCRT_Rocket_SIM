@@ -1,5 +1,5 @@
 import numpy as np
-from math import ceil,sin
+from math import ceil,sin,pi
 import scipy
 import matplotlib.pyplot as plt
 

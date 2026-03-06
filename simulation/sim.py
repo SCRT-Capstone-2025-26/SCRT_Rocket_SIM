@@ -113,11 +113,11 @@ if __name__ == '__main__':
         run(exti=3,U0=np.array([0,0,20*pi/180]),t0=0)
         run(exti=3,U0=np.array([0,0,0]),t0=0)
         plt.show()
-    elif True:
+    elif False:
         run(exti=3,U0=np.array([0,0,5*pi/180]),t0=0)
         run(exti=0,U0=np.array([0,0,5*pi/180]),t0=0)
         plt.show()
-    else:
+    elif False:
         heights=[200*i+2000 for i in range(5)]
         machs=[0.1+0.2*i for i in range(5)]
         angles=[pi/180*i**2 for i in range(4)]
@@ -144,4 +144,39 @@ if __name__ == '__main__':
                     lookup[hi][ai]+=[int(np.array(apogees).argmin())]
         print("Lookup:")
         print(np.array(lookup))
-    
+    else:
+        heights=[200*i+800 for i in range(11)]
+        angles=[pi/180*i**2 for i in range(4)]
+        print("Angles:",angles)
+        print("Heights:",heights)
+        print("Exts:",Exts)
+        lookup=[[[] for ai in angles] for hi in heights]
+        Tol=0.001 
+        for hi in range(len(heights)):
+            for ai in range(len(angles)):
+                OptimalVels=[]
+                for exti in range(len(Exts)):
+                    va=0
+                    vb=1.1
+                    U0=np.array([heights[hi],mach2v([va])[0],angles[ai]])
+                    apogee_a=abs(apogee(exti,U0,200,t0=4)-10000/3.3) 
+                    U0=np.array([heights[hi],mach2v([vb])[0],angles[ai]])
+                    apogee_b=abs(apogee(exti,U0,200,t0=4)-10000/3.3) 
+                    while(vb-va>Tol):
+                        mid_v=(va+vb)/2
+                        # print(mid_v,va,vb)
+                        U0=np.array([heights[hi],mach2v([mid_v])[0],angles[ai]])
+                        apogee_mid=abs(apogee(exti,U0,200,t0=4)-10000/3.3) 
+                        if apogee_a>apogee_b:
+                            # print('a has more error')
+                            va=mid_v
+                            apogee_a=apogee_mid
+                        else:
+                            # print('b has more error')
+                            vb=mid_v
+                            apogee_b=apogee_mid
+                    OptimalVels+=[mid_v]
+                print(f"Height:{heights[hi]} Angle:{angles[ai]:.3f} %vel diff:{(max(OptimalVels)-min(OptimalVels))/min(OptimalVels):.3f}")
+                lookup[hi][ai]+=[OptimalVels]
+        print("Lookup:")
+        print(np.array(lookup))
