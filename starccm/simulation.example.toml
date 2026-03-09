@@ -10,12 +10,9 @@ project = "design-manager-proj.dmprj"
 # name of design study within the project
 design-study = "Design Study Name"
 
-# output CSV filename with design study output for specified parameter ranges
-# it might be useful to put this in your hpc-share if testing a wide range of parameters
-csv-filename = "simulation.csv"
-
-# STAR-CCM+ console output file name prefix (no file extension)
-console-output = "simulation"
+# slurm job prefix
+# also used for csv output and starccm console/error output
+job-prefix = "subscale"
 
 # number of CPUs to request
 cpus = 12
@@ -53,4 +50,17 @@ units = "deg"
 minimum = 0
 maximum = 20
 increment = 4
+
 units = "mm"  # length units now
+
+
+# sample constant parameter
+[parameter.NumRounds]
+
+# only required key is value
+value = 450
+
+# units is omitted here since this parameter is meant to be unitless
+# equivalent to:
+# 
+# units = ""
