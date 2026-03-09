@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import time
+from numpy import sin,cos,pi
 import numpy as np
-from math import sin,cos,pi
 from utilities import sign
 from integration import scipyintegrate, integrate_adaptive
 # from data_utilities.dataimport_utilities import np_thrust_data,read_drag_data_np
@@ -178,5 +178,6 @@ if __name__ == '__main__':
                     OptimalVels+=[mid_v]
                 print(f"Height:{heights[hi]} Angle:{angles[ai]:.3f} %vel diff:{(max(OptimalVels)-min(OptimalVels))/min(OptimalVels):.3f}")
                 lookup[hi][ai]+=[OptimalVels]
-        print("Lookup:")
         print(np.array(lookup))
+        np.save('lookup.npy',lookup)
+        print("Lookup:")
