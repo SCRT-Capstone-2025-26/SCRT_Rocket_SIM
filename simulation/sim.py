@@ -1,13 +1,10 @@
 import matplotlib.pyplot as plt
-import time
 from numpy import sin, cos, pi
 import numpy as np
-from utilities import sign
-from integration import scipyintegrate, integrate_adaptive
+from integration import scipyintegrate
 # from data_utilities.dataimport_utilities import np_thrust_data,read_drag_data_np
 
 from data_utilities.interpolation import Cd_init
-from FDS import Heun
 import scipy
 
 ##################CD is actually just drag rn
