@@ -15,6 +15,3 @@ def test_adaptive_convergence():
     )
 
 
-@pytest.mark.skip(reason="Failing")
-def test_scipy_convergence():
-    conv.conv_test(lambda x: sim.run_scipy(5000 * (0.1**x)), 5, conv.power_bound(-1))

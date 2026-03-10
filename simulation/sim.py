@@ -49,17 +49,9 @@ def Fext(t,u,exti):#the derivative of the state space
     Acceleration=Accel(t,u,exti)
     return np.array([u[1]*cos(u[2]),    #Change in Height
                      Acceleration,      #Change in Velocity 
-                     -g*sin(u[2])/(u[1]+Acceleration #Change in zenith 
-                                   )])
+        -g*sin(u[2])/(u[1]+Acceleration)#Change in Zenith 
+                                   ])
 
-
-def run_integrate_adaptive(dt,exti=3,t0=0):
-    T=200
-    dt=.05
-    U0=np.array([0,0,1/15])#u[0]=height u[1]=velocity
-    def F(t,u):
-       return Fext(t,u,exti) 
-    return integrate_adaptive([U0,U0],Heun,F,T,dt,t0=t0)
 
 
 def run_scipy(dt,exti=3,t0=0,
@@ -108,12 +100,6 @@ def mach2v(V):
 
 if __name__ == '__main__':
     if False:
-        run(exti=0,U0=np.array([0,0,1/15]),t0=0)
-        run(exti=1,U0=np.array([0,0,1/15]),t0=0)
-        run(exti=2,U0=np.array([0,0,1/15]),t0=0)
-        run(exti=3,U0=np.array([0,0,1/15]),t0=0)
-        plt.show()
-    elif False:
         run(exti=3,U0=np.array([0,0,20*pi/180]),t0=0)
         run(exti=3,U0=np.array([0,0,0]),t0=0)
         plt.show()
@@ -121,41 +107,14 @@ if __name__ == '__main__':
         run(exti=3,U0=np.array([0,0,5*pi/180]),t0=0)
         run(exti=0,U0=np.array([0,0,5*pi/180]),t0=0)
         plt.show()
-    elif False:
-        heights=[200*i+2000 for i in range(5)]
-        machs=[0.1+0.2*i for i in range(5)]
-        angles=[pi/180*i**2 for i in range(4)]
-        print("Angles:",heights)
-        print("Heights:",heights)
-        print("Machs:",machs)
-        lookup=[[[] for ai in angles] for hi in heights]
-
-        for hi in range(len(heights)):
-            for ai in range(len(angles)):
-                for vi in range(len(machs)):
-                    U0=np.array([heights[hi],mach2v(machs)[vi],angles[ai]])
-                    # plt.clf()
-                    # run(exti=0,U0=U0)
-                    # run(exti=1,U0=U0)
-                    # run(exti=2,U0=U0)
-                    # run(exti=3,U0=U0)
-                    # plt.pause(10**-100)
-                    apogees=[]
-                    for exti in range(len(Exts)):
-                        apogees+=[abs(apogee(exti,U0,200,t0=4)-10000/3.3)]
-                    print(U0,[float(a) for a in apogees])
-                    plt.show()
-                    lookup[hi][ai]+=[int(np.array(apogees).argmin())]
-        print("Lookup:")
-        print(np.array(lookup))
     else:
         heights=[200*i+800 for i in range(11)]
         angles=[pi/180*i**2 for i in range(4)]
+        Tol=0.001 
         print("Angles:",angles)
         print("Heights:",heights)
         print("Exts:",Exts)
         lookup=[[[] for ai in angles] for hi in heights]
-        Tol=0.001 
         for hi in range(len(heights)):
             for ai in range(len(angles)):
                 OptimalVels=[]
