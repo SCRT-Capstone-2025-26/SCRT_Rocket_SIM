@@ -1,8 +1,13 @@
 import matplotlib.pyplot as plt
+<<<<<<< HEAD
 import time
 from numpy import sin,cos,pi
 import numpy as np
 from utilities import sign
+=======
+import numpy as np
+from math import sin,cos,pi
+>>>>>>> NoahInterpolation
 from integration import scipyintegrate, integrate_adaptive
 # from data_utilities.dataimport_utilities import np_thrust_data,read_drag_data_np
 
@@ -71,7 +76,7 @@ def apogee(exti,U0,T,t0,dt=.0005):
 
 def run(headless=False,exti=3,U0=np.array([0,0,1/15]),t0=4):
 #initial conditions
-    T=200
+    # T=200
     dt=.05
     #run code
     def F(t,u):

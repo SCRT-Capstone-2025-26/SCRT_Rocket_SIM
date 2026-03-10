@@ -71,7 +71,6 @@ def find_index(word,csv_data):
 
 
         
-
 # Input: 
 #     CSVs: a list of csv filepath strings.
 #     VarNames: a list of substrings in the headers you want data from
@@ -83,14 +82,9 @@ def read_drag_data_np(CSVs = [
 'sample_datasets/SupSonicSweep2_BEAVS_012926_FullData.csv'],
 # 'sample_datasets/SupSonicSweep7_SATurb_020426_FullData.csv',
 # 'sample_datasets/SupSonicSweep8_SATurb_020526_FullData.csv'],
-              # 'sample_datasets/SupSonicSweep5_013126_FullData.csv',    
-              # 'sample_datasets/SupSonicSweep2_BEAVS_012926_FullData.csv', 
-              # 'sample_datasets/SupSonicSweep4_013026_FullData.csv',
-              # 'sample_datasets/SupSonicSweep4_013026_FullData.csv'],
-              # '../sample_datasets/SimNoaMaxStyle.csv'],
 
               # '../sample_datasets/NoaExt1DCdMach.csv'], # list of CSVs to be used
-        VarNames=['Extension','Mach','Drag Coeff']): # list of substrings in the headers for which you want data
+              VarNames=['Extension','Mach','Drag Coeff']): # list of substrings in the headers for which you want data
     import numpy as np
     Vars=[[] for i in range(len(VarNames))] # initialize a list for each Variable
     for CSV in CSVs: 
@@ -101,24 +95,6 @@ def read_drag_data_np(CSVs = [
         Vars[vari]=np.array(Vars[vari])
     #print(Vars)
     return Vars
-
-def plot2d(Vars,VarNames=['Extension','Mach','Drag Coeff']):
-        import matplotlib.pyplot as plt
-        import numpy as np
-        xs =Vars[0]
-        ys =Vars[1]
-        zs =Vars[2]
-# 2. Create a figure and a 3D axes object
-        fig = plt.figure(figsize=(10, 8))
-        ax = fig.add_subplot(projection='3d') # or fig.add_subplot(111, projection='3d')
-# 3. Plot the data
-        ax.scatter(xs, ys, zs, c=zs, cmap='viridis', marker='o') # 'c' for color mapping, 'cmap' for color map
-# 4. Add labels and a title
-        ax.set_xlabel(VarNames[0])
-        ax.set_ylabel(VarNames[1])
-        ax.set_zlabel(VarNames[2])
-# 5. Display the plot
-        plt.show()
 
 
   
@@ -139,10 +115,17 @@ def read_drag_data(filename):
     return points
 
 if __name__ == "__main__":
+    # Example trustfile reading
     print(read_eng_thrustfile("../sample_datasets/AeroTech_N2000W.eng"))
-    plot2d(read_drag_data_np())
-    plot2d(read_drag_data_np(VarNames=['Extension','Mach','Drag of all']))
-    # ext,mach,cd=read_drag_data_np()
-    # ext2,cd2=read_drag_data_np(CSVs=['../sample_datasets/SimNoaExtDragCd.csv'],VarNames=['Extension','Drag Coeff'])
-    # mach=np.array(list(mach)+[0.75 for i in range(len(ext2))])
-    # plot2d([np.array(list(ext)+list(ext2)),mach,np.array(list(cd)+list(cd2))])
+
+
+    # Example read_drag_data_np
+    # read_drag_data_np(
+        # CSVs=['../sample_datasets/SupSonicSweep5_013126_FullData.csv',    
+        #       '../sample_datasets/SupSonicSweep2_BEAVS_012926_FullData.csv', 
+        #       '../sample_datasets/SupSonicSweep2_012826_data.csv',  
+        #       '../sample_datasets/SupSonicSweep4_013026_FullData.csv'],
+        #       # '../sample_datasets/SimNoaMaxStyle.csv'],
+
+        #       # '../sample_datasets/NoaExt1DCdMach.csv'], # list of CSVs to be used
+    #     VarNames=['Extension','Mach','Drag Coeff'])
