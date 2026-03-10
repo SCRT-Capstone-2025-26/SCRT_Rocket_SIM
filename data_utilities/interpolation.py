@@ -1,14 +1,16 @@
-#TODO add some common sense tests to verify this function
-from scipy.interpolate import  make_interp_spline
-from .dataimport_utilities import np_thrust_data,read_drag_data_np
+# TODO add some common sense tests to verify this function
+from scipy.interpolate import make_interp_spline
+from .dataimport_utilities import np_thrust_data, read_drag_data_np
 from .eng_to_csv import eng_to_csv
 import os
 
 import numpy as np
 import matplotlib.pyplot as plt
-#returns the estimated amount of force at a specific point in time
+
+
+# returns the estimated amount of force at a specific point in time
 def thrust_init():
-#TODO: make this file a non test file.
+    # TODO: make this file a non test file.
     directory_name = "../data/runs/20251114_191130/input/"
     try:
         os.mkdir(directory_name)
@@ -19,75 +21,110 @@ def thrust_init():
     spec_filepath = "../data/runs/20251114_191130/input/motor_spec.csv"
     eng_to_csv(src_filepath, dst_filepath, spec_filepath)
 
-    Thrust_data=np_thrust_data("../data/runs/20251114_191130/input/thrust_motor.csv")
-    timesteps=Thrust_data[:,0]
-    Thrust=Thrust_data[:,1]
-    return make_interp_spline(timesteps, Thrust,k=5)
+    Thrust_data = np_thrust_data("../data/runs/20251114_191130/input/thrust_motor.csv")
+    timesteps = Thrust_data[:, 0]
+    Thrust = Thrust_data[:, 1]
+    return make_interp_spline(timesteps, Thrust, k=5)
+
 
 # finds all the drag data with the extension fixed extension
-def fix_ext(drag_data,fixed_ext,exti=0,machi=1):
+def fix_ext(drag_data, fixed_ext, exti=0, machi=1):
     print(len(drag_data))
-    good_data=[[] for j in range(len(drag_data))]
+    good_data = [[] for j in range(len(drag_data))]
     for i in range(len(drag_data[exti])):
-        if drag_data[exti][i]==fixed_ext:
+        if drag_data[exti][i] == fixed_ext:
             for j in range(len(good_data)):
-                good_data[j]+=[drag_data[j][i]]
+                good_data[j] += [drag_data[j][i]]
     return good_data
 
-def Cd_init(fixed_ext):
-    drag_data=np.array(fix_ext(read_drag_data_np(VarNames=['Extension','Mach','Drag of all','Altitude']), fixed_ext)[1:])
-    sort_indices = np.argsort(drag_data[0,:])
-    drag_data=drag_data[:,sort_indices]
-    #print(drag_data)
-    def AirDensity(h):
-        return 1.2*.99988**h
-    machsteps=drag_data[0,:]
-    drag=np.array([drag_data[1,i]/AirDensity(drag_data[2,i]*3.28084) for i in range(len(drag_data[1,:]))])
-    return make_interp_spline(machsteps, drag,k=1)
 
+def Cd_init(fixed_ext):
+    drag_data = np.array(
+        fix_ext(
+            read_drag_data_np(
+                VarNames=["Extension", "Mach", "Drag of all", "Altitude"]
+            ),
+            fixed_ext,
+        )[1:]
+    )
+    sort_indices = np.argsort(drag_data[0, :])
+    drag_data = drag_data[:, sort_indices]
+
+    # print(drag_data)
+    def AirDensity(h):
+        return 1.2 * 0.99988**h
+
+    machsteps = drag_data[0, :]
+    drag = np.array(
+        [
+            drag_data[1, i] / AirDensity(drag_data[2, i] * 3.28084)
+            for i in range(len(drag_data[1, :]))
+        ]
+    )
+    return make_interp_spline(machsteps, drag, k=1)
 
 
 def pointwise_interp():
-# #TODO: use something that is actually Cd data
-#     directory_name = "../data/runs/20251114_191130/input/"
-#     try:
-#         os.mkdir(directory_name)
-#     except FileExistsError:
-#         pass
-#     src_filepath = "../sample_datasets/AeroTech_N2000W.eng"
-#     dst_filepath = "../data/runs/20251114_191130/input/thrust_motor.csv"
-#     spec_filepath = "../data/runs/20251114_191130/input/motor_spec.csv"
-#     eng_to_csv(src_filepath, dst_filepath, spec_filepath)
-#
-#     Thrust_data=np_thrust_data("../data/runs/20251114_191130/input/thrust_motor.csv")
-#     timesteps=Thrust_data[:,0]
-#     Thrust=Thrust_data[:,1]
-#     data=[[[Thrust[i]*Thrust[j],timesteps[i],timesteps[j]] for j in range(len(Thrust))] for i in range(len(Thrust))]
-#     data=np.array(data)
-#     #TODO replace everything above with real data
-    
-    [ext,mach,Cd]=read_drag_data_np()
-    data=[[Cd[i],ext[i],mach[i]] for i in range(len(Cd))]
+    # #TODO: use something that is actually Cd data
+    #     directory_name = "../data/runs/20251114_191130/input/"
+    #     try:
+    #         os.mkdir(directory_name)
+    #     except FileExistsError:
+    #         pass
+    #     src_filepath = "../sample_datasets/AeroTech_N2000W.eng"
+    #     dst_filepath = "../data/runs/20251114_191130/input/thrust_motor.csv"
+    #     spec_filepath = "../data/runs/20251114_191130/input/motor_spec.csv"
+    #     eng_to_csv(src_filepath, dst_filepath, spec_filepath)
+    #
+    #     Thrust_data=np_thrust_data("../data/runs/20251114_191130/input/thrust_motor.csv")
+    #     timesteps=Thrust_data[:,0]
+    #     Thrust=Thrust_data[:,1]
+    #     data=[[[Thrust[i]*Thrust[j],timesteps[i],timesteps[j]] for j in range(len(Thrust))] for i in range(len(Thrust))]
+    #     data=np.array(data)
+    #     #TODO replace everything above with real data
+
+    [ext, mach, Cd] = read_drag_data_np()
+    data = [[Cd[i], ext[i], mach[i]] for i in range(len(Cd))]
     # data=[[1,1,1],[2,2,2],[3,1,2],[4,2,3],[5,1,3],[6,2,1]]
-    data=sorted(data, key=lambda tup: tup[1])
-    data=sorted(data, key=lambda tup: tup[2])
-    length=1
-    while data[length][2]==data[0][2]:
-        length+=1
-    data=np.array(data).reshape((len(data)//length,length,3))
-    print(data,length)
+    data = sorted(data, key=lambda tup: tup[1])
+    data = sorted(data, key=lambda tup: tup[2])
+    length = 1
+    while data[length][2] == data[0][2]:
+        length += 1
+    data = np.array(data).reshape((len(data) // length, length, 3))
+    print(data, length)
     # print(data[:,0,1])
 
-    #CAUTION: DOES NOT WORK:
-    firstinterps=[make_interp_spline(data[i,:,2], data[i,:,0],k=5) for i in range(len(data))]
-    def secondinterp(x,y):
-        xsteps=data[:,0,1]
-        z=[f(y) for f in firstinterps]
-        return make_interp_spline(xsteps,z)(x)
-    return secondinterp
-def laplacian(Z,dx):
-    return np.array([[(4*Z[i+1][j+1]-Z[i+2][j+1]-Z[i+1][j+2]-Z[i][j+1]-Z[i+1][j])*dx for j in range(len(Z[0])-2)] for i in range(len(Z)-2)])
+    # CAUTION: DOES NOT WORK:
+    firstinterps = [
+        make_interp_spline(data[i, :, 2], data[i, :, 0], k=5) for i in range(len(data))
+    ]
 
+    def secondinterp(x, y):
+        xsteps = data[:, 0, 1]
+        z = [f(y) for f in firstinterps]
+        return make_interp_spline(xsteps, z)(x)
+
+    return secondinterp
+
+
+def laplacian(Z, dx):
+    return np.array(
+        [
+            [
+                (
+                    4 * Z[i + 1][j + 1]
+                    - Z[i + 2][j + 1]
+                    - Z[i + 1][j + 2]
+                    - Z[i][j + 1]
+                    - Z[i + 1][j]
+                )
+                * dx
+                for j in range(len(Z[0]) - 2)
+            ]
+            for i in range(len(Z) - 2)
+        ]
+    )
 
 
 if __name__ == "__main__":
@@ -126,9 +163,9 @@ if __name__ == "__main__":
     #
     # plt.show()
     # print(.15,thrust(.15))
-    Exts=[0,5,15,30]
-    Cd=[Cd_init(ext) for ext in Exts]
-    X=np.linspace(0, 1, 1000)
+    Exts = [0, 5, 15, 30]
+    Cd = [Cd_init(ext) for ext in Exts]
+    X = np.linspace(0, 1, 1000)
     for j in range(4):
-        plt.plot(X,np.array([Cd[j](x) for x in X]))
+        plt.plot(X, np.array([Cd[j](x) for x in X]))
     plt.show()

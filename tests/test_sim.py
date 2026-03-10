@@ -5,7 +5,3 @@ import pytest
 
 def test_run():
     sim.run(headless=True)
-
-
-
-

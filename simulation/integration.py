@@ -1,72 +1,82 @@
 import numpy as np
-from math import ceil,sin,pi
+from math import ceil, sin, pi
 import scipy
 import matplotlib.pyplot as plt
 
-## Given an intial condition (u) a  scipy scheme 
+## Given an intial condition (u) a  scipy scheme
 ## a forcing function (f) an end time (T)
 ## and a time step (dt)
 ## This function records the time series made by the
 ## output u such that u'=f and u(0)=u0
 
-def scipyintegrate(u0,scheme,f,T,dt,t0=0):
+
+def scipyintegrate(u0, scheme, f, T, dt, t0=0):
     # print(u0,'u0')
-    u=[u0]
-    t=[t0]
-    solution=scheme(f,t0,u0,T,max_step=dt)
-    while u[-1][1]>=-10 and t[-1]<T:#  
+    u = [u0]
+    t = [t0]
+    solution = scheme(f, t0, u0, T, max_step=dt)
+    while u[-1][1] >= -10 and t[-1] < T:  #
         solution.step()
-        t+=[solution.t]
-        u+=[solution.y]
+        t += [solution.t]
+        u += [solution.y]
         # print(t[-1],u[-1][0])
-    return np.array(u),np.array(t)
+    return np.array(u), np.array(t)
     # return np.array(solution.y),np.array(solution.t)
 
 
-
-
-#Finite Difference Scheme(FDS) integrator
+# Finite Difference Scheme(FDS) integrator
 def integrate(u0, scheme, f, T, dt):
     u = u0
     print(u)
-    N=ceil(T/dt)
+    N = ceil(T / dt)
     for n in range(N):
-        u+=[scheme(f,dt*n,dt,u)]
-        if u[-1][0]<0:
+        u += [scheme(f, dt * n, dt, u)]
+        if u[-1][0] < 0:
             return u
     return u
 
+
 def double_step(scheme):
-    return lambda f,t,dt,u:scheme(f,t+dt/2,dt/2,u+[scheme(f,t,dt/2,u)])
+    return lambda f, t, dt, u: scheme(
+        f, t + dt / 2, dt / 2, u + [scheme(f, t, dt / 2, u)]
+    )
 
-def integrate_adaptive(u0, scheme, f, T, dt,t0=0,batch=1,scheme2=None,tol=None):
+
+def integrate_adaptive(u0, scheme, f, T, dt, t0=0, batch=1, scheme2=None, tol=None):
     if tol is None:
-        tol=dt/1000
+        tol = dt / 1000
     if scheme2 is None:
-        scheme2=double_step(scheme)
-    u = [u0[0] for i in range(batch+1)]
-    t = [t0 for i in range(batch+1)]
+        scheme2 = double_step(scheme)
+    u = [u0[0] for i in range(batch + 1)]
+    t = [t0 for i in range(batch + 1)]
     print(u)
-    while t[-1]<T+t0:
-        err=np.linalg.norm(scheme(f,t[-1],dt,u)-scheme2(f,t[-1],dt,u))
-        #err/=np.linalg.norm(scheme(f,t[-1],dt,u))
-        if err>tol:
-            #print(err,dt,t[-1])
-            u=u[:-batch]
-            t=t[:-batch]
-            dt/=4.0
+    while t[-1] < T + t0:
+        err = np.linalg.norm(scheme(f, t[-1], dt, u) - scheme2(f, t[-1], dt, u))
+        # err/=np.linalg.norm(scheme(f,t[-1],dt,u))
+        if err > tol:
+            # print(err,dt,t[-1])
+            u = u[:-batch]
+            t = t[:-batch]
+            dt /= 4.0
         else:
-            dt*=1.1
+            dt *= 1.1
         for i in range(batch):
-            t+=[t[-1]+dt]
-            u+=[scheme(f,t[-1],dt,u)]
-            if u[-1][0]<0 or t[-1]>T:
-                return np.array(u),np.array(t)
-    return np.array(u),np.array(t)
+            t += [t[-1] + dt]
+            u += [scheme(f, t[-1], dt, u)]
+            if u[-1][0] < 0 or t[-1] > T:
+                return np.array(u), np.array(t)
+    return np.array(u), np.array(t)
 
 
-if __name__ == '__main__':
-    u,t=scipyintegrate(np.array([1.,0]),scipy.integrate.RK45,lambda t,u:np.array([-u[1],sin(u[0])]),200,0.01,t0=-0.5)
-    print(t,u[:,0])
-    plt.plot(t,u[:,0])
+if __name__ == "__main__":
+    u, t = scipyintegrate(
+        np.array([1.0, 0]),
+        scipy.integrate.RK45,
+        lambda t, u: np.array([-u[1], sin(u[0])]),
+        200,
+        0.01,
+        t0=-0.5,
+    )
+    print(t, u[:, 0])
+    plt.plot(t, u[:, 0])
     plt.show()
