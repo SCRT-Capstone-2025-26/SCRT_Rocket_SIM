@@ -113,7 +113,7 @@ def run(headless=False, exti=3, U0=np.array([0, 0, 1 / 15]), t0=4):
         ax2_v.legend()
         ax2_v.set_xlabel("time (s)")
         ax2_v.set_ylabel("velocity(m/s)")
-        ax1_h.set_title("Flight Velocity Graph")
+        ax2_v.set_title("Flight Velocity Graph")
 
         ax3_angle.plot(Time45, U45[:, 2], label=f"ext={Exts[exti]} angle={U0[2]:.2f}")
         ax3_angle.legend()
