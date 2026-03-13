@@ -163,7 +163,7 @@ def LookupTable(angles,heights):
                         vb=mid_v
                         apogee_b=apogee_mid
                 OptimalVels+=[mid_v]
-            print(f"Height:{heights[hi]} Angle:{angles[ai]:.3f} %vel diff:{(max(OptimalVels)-min(OptimalVels))/min(OptimalVels):.3f}")
+            print(f"Height:{heights[hi]} Angle:{angles[ai]:.3f} vel diff:{100*(max(OptimalVels)-min(OptimalVels))/min(OptimalVels):.3f}%")
             lookup[hi][ai]+=[OptimalVels]
     return lookup
 
@@ -173,15 +173,12 @@ def mach2v(V):
 
 
 if __name__ == "__main__":
-    if True:
         run(exti=3, U0=np.array([0, 0, 20 * pi / 180]), t0=0)
         run(exti=3, U0=np.array([0, 0, 0]), t0=0)
         plt.show()
-    elif False:
         run(exti=3, U0=np.array([0, 0, 5 * pi / 180]), t0=0)
         run(exti=0, U0=np.array([0, 0, 5 * pi / 180]), t0=0)
         plt.show()
-    else:
         heights=[200*i+800 for i in range(11)]
         angles=[pi/180*i**2 for i in range(4)]
         Tol=0.001 
