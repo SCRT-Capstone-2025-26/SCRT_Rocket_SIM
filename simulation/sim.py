@@ -103,7 +103,7 @@ def run(headless=False, exti=3, U0=np.array([0, 0, 1 / 15]), t0=4):
         # plotting
         fig, (ax1_h, ax2_v, ax3_angle) = plt.subplots(1,3)
         ax1_h.plot(Time45, U45[:, 0], label=f"ext={Exts[exti]}, angle={U0[2]:.2f}")
-        ax1_h.plot(Time45, [10000 / 3.3 for t in Time45], label="Goal height")
+        ax1_h.plot(Time45, [10000 * 0.3048 for t in Time45], label="Goal height")
         ax1_h.legend()
         ax1_h.set_xlabel("time (s)")
         ax1_h.set_ylabel("Height(m)")
@@ -120,7 +120,7 @@ def run(headless=False, exti=3, U0=np.array([0, 0, 1 / 15]), t0=4):
         ax3_angle.set_xlabel("time (s)")
         ax3_angle.set_ylabel("radians")
         ax3_angle.set_title("Flight Angle Graph")
-        plt.tight_layout()
+        # plt.tight_layout()
 
         # # plt.plot(Time,U[:,0],label="Height")
         # # plt.plot(Time,U[:,1],label="Velocity")
