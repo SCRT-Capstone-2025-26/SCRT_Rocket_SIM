@@ -150,8 +150,6 @@ def LookupTable(angles,heights):
             lookup[hi][ai]+=[OptimalVels]
     return lookup
 
-if __name__ == '__main__':
-=======
 def mach2v(V):
     # TODO add more decimal points
     return [343.0 * v for v in V]
