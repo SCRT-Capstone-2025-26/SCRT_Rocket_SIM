@@ -98,6 +98,40 @@ def mach2v(V):
     #TODO add more decimal points
     return [343.*v for v in V]
 
+def Eval(maxheight,currheight):
+    return abs(maxheight-10000/3.3)
+
+
+def LookupTable(angles,heights):
+    lookup=[[[] for ai in angles] for hi in heights]
+    for hi in range(len(heights)):
+        for ai in range(len(angles)):
+            OptimalVels=[]#optimal velocity given a specfic height to switch beavs extension
+            for exti in range(len(Exts)):
+                va=0
+                vb=1.1
+                U0=np.array([heights[hi],mach2v([va])[0],angles[ai]])
+                apogee_a=abs(apogee(exti,U0,200,t0=4)-10000/3.3)
+                U0=np.array([heights[hi],mach2v([vb])[0],angles[ai]])
+                apogee_b=abs(apogee(exti,U0,200,t0=4)-10000/3.3)
+                while(vb-va>Tol):
+                    mid_v=(va+vb)/2
+                    # print(mid_v,va,vb)
+                    U0=np.array([heights[hi],mach2v([mid_v])[0],angles[ai]])
+                    apogee_mid=Eval(apogee(exti,U0,200,t0=4),heights[hi])
+                    if apogee_a>apogee_b:
+                        # print('a has more error')
+                        va=mid_v
+                        apogee_a=apogee_mid
+                    else:
+                        # print('b has more error')
+                        vb=mid_v
+                        apogee_b=apogee_mid
+                OptimalVels+=[mid_v]
+            print(f"Height:{heights[hi]} Angle:{angles[ai]:.3f} %vel diff:{(max(OptimalVels)-min(OptimalVels))/min(OptimalVels):.3f}")
+            lookup[hi][ai]+=[OptimalVels]
+    return lookup
+
 if __name__ == '__main__':
     if False:
         run(exti=3,U0=np.array([0,0,20*pi/180]),t0=0)
@@ -114,33 +148,7 @@ if __name__ == '__main__':
         print("Angles:",angles)
         print("Heights:",heights)
         print("Exts:",Exts)
-        lookup=[[[] for ai in angles] for hi in heights]
-        for hi in range(len(heights)):
-            for ai in range(len(angles)):
-                OptimalVels=[]
-                for exti in range(len(Exts)):
-                    va=0
-                    vb=1.1
-                    U0=np.array([heights[hi],mach2v([va])[0],angles[ai]])
-                    apogee_a=abs(apogee(exti,U0,200,t0=4)-10000/3.3) 
-                    U0=np.array([heights[hi],mach2v([vb])[0],angles[ai]])
-                    apogee_b=abs(apogee(exti,U0,200,t0=4)-10000/3.3) 
-                    while(vb-va>Tol):
-                        mid_v=(va+vb)/2
-                        # print(mid_v,va,vb)
-                        U0=np.array([heights[hi],mach2v([mid_v])[0],angles[ai]])
-                        apogee_mid=abs(apogee(exti,U0,200,t0=4)-10000/3.3) 
-                        if apogee_a>apogee_b:
-                            # print('a has more error')
-                            va=mid_v
-                            apogee_a=apogee_mid
-                        else:
-                            # print('b has more error')
-                            vb=mid_v
-                            apogee_b=apogee_mid
-                    OptimalVels+=[mid_v]
-                print(f"Height:{heights[hi]} Angle:{angles[ai]:.3f} %vel diff:{(max(OptimalVels)-min(OptimalVels))/min(OptimalVels):.3f}")
-                lookup[hi][ai]+=[OptimalVels]
+        lookup=LookupTable(angles, heights)
+        print("Lookup:")
         print(np.array(lookup))
         np.save('lookup.npy',lookup)
-        print("Lookup:")
