@@ -101,10 +101,10 @@ def run(headless=False, exti=3, U0=np.array([0, 0, 1 / 15]), t0=4):
 
     if not headless:
         # plotting
-        plt.plot(Time45, U45[:, 0], label="scipyh,exti=" + str(exti))
-        plt.plot(Time45, U45[:, 1], label="scipyv,exti=" + str(exti))
-        plt.plot(Time45, U45[:, 2] * 1000, label="scipytheta,exti=" + str(exti))
-        plt.plot(Time45, [10000 / 3.3 for t in Time45], label="goalheight")
+        plt.plot(Time45, U45[:, 0], label=f"Height for extension={Exts[exti]} intial angle={U0[2]:.2f}")
+        plt.plot(Time45, U45[:, 1], label=f"Velocity(m/s) for extension={Exts[exti]} intial angle={U0[2]:.2f}")
+        plt.plot(Time45, U45[:, 2] * 1000, label=f"Angle(rad/1000) for extension={Exts[exti]} intial angle={U0[2]:.2f}")
+        plt.plot(Time45, [10000 / 3.3 for t in Time45], label="Goal height(m)")
 
         # plt.plot(Time,U[:,0],label="Height")
         # plt.plot(Time,U[:,1],label="Velocity")
@@ -156,7 +156,7 @@ def mach2v(V):
 
 
 if __name__ == "__main__":
-    if False:
+    if True:
         run(exti=3, U0=np.array([0, 0, 20 * pi / 180]), t0=0)
         run(exti=3, U0=np.array([0, 0, 0]), t0=0)
         plt.show()
