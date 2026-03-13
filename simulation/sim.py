@@ -101,19 +101,35 @@ def run(headless=False, exti=3, U0=np.array([0, 0, 1 / 15]), t0=4):
 
     if not headless:
         # plotting
-        plt.plot(Time45, U45[:, 0], label=f"Height for extension={Exts[exti]} intial angle={U0[2]:.2f}")
-        plt.plot(Time45, U45[:, 1], label=f"Velocity(m/s) for extension={Exts[exti]} intial angle={U0[2]:.2f}")
-        plt.plot(Time45, U45[:, 2] * 1000, label=f"Angle(rad/1000) for extension={Exts[exti]} intial angle={U0[2]:.2f}")
-        plt.plot(Time45, [10000 / 3.3 for t in Time45], label="Goal height(m)")
+        fig, (ax1_h, ax2_v, ax3_angle) = plt.subplots(1,3)
+        ax1_h.plot(Time45, U45[:, 0], label=f"ext={Exts[exti]}, angle={U0[2]:.2f}")
+        ax1_h.plot(Time45, [10000 / 3.3 for t in Time45], label="Goal height")
+        ax1_h.legend()
+        ax1_h.xlabel("time (s)")
+        ax1_h.ylabel("Height(m)")
+        ax1_h.title("Flight Altitude Graph")
 
-        # plt.plot(Time,U[:,0],label="Height")
-        # plt.plot(Time,U[:,1],label="Velocity")
-        plt.legend()
-        plt.xlabel("time (s)")
-        plt.ylabel("velocity(m/s)/Height(m)")
-        # plt.show()
-        # plt.plot(np.array(Dragdata),label="Dragdata")
-        # plt.show()
+        ax2_v.plot(Time45, U45[:, 1], label=f"ext={Exts[exti]} angle={U0[2]:.2f}")
+        ax2_v.legend()
+        ax2_v.xlabel("time (s)")
+        ax2_v.ylabel("velocity(m/s)")
+        ax1_h.title("Flight Velocity Graph")
+
+        ax3_angle.plot(Time45, U45[:, 2], label=f"ext={Exts[exti]} angle={U0[2]:.2f}")
+        ax3_angle.legend()
+        ax3_angle.xlabel("time (s)")
+        ax3_angle.ylabel("radians")
+        ax3_angle.title("Flight Angle Graph")
+
+        # # plt.plot(Time,U[:,0],label="Height")
+        # # plt.plot(Time,U[:,1],label="Velocity")
+        # plt.legend()
+        # plt.xlabel("time (s)")
+        # # plt.ylabel("velocity(m/s)/Height(m)")
+        # # plt.show()
+        # # plt.plot(np.array(Dragdata),label="Dragdata")
+        # # plt.show()
+        fig.show()
 
 
 def Eval(maxheight,currheight):
