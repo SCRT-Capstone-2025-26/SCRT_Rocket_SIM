@@ -120,6 +120,7 @@ def runsweep(headless=False, exti=[3], u0=[np.array([0, 0, 1 / 15])], t0=[4]):
         ax3_angle.set_xlabel("time (s)")
         ax3_angle.set_ylabel("radians")
         ax3_angle.set_title("Flight Angle Graph")
+        plt.get_current_fig_manager().full_screen_toggle()
         fig.show()
 
 
