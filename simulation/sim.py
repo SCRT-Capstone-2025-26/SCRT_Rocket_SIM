@@ -5,8 +5,8 @@ import numpy as np
 from integration import scipyintegrate
 # from data_utilities.dataimport_utilities import np_thrust_data,read_drag_data_np
 
-from data_utilities.interpolation import cd_init
-from data_utilities.equations_n_constants import air_density, thrust, total_mass, mach2v, GRAVITY
+from data_utilities.interpolation import drag_p_airden_fn
+from data_utilities.equations_n_constants import air_density, thrust, total_mass, mach2v, GRAVITY, GOAL_HEIGHT_METERS
 import scipy
 
 ##################CD is actually just drag rn
@@ -20,7 +20,7 @@ Dragdata = []
 
 
 Exts = [0, 5, 15, 30]
-Cd = [cd_init(ext) for ext in Exts]
+Cd = [drag_p_airden_fn(ext) for ext in Exts]
 
 
 def drag(h, v, theta, exti, t):
@@ -53,6 +53,7 @@ def f_w_ext(t, u, exti):  # the derivative of the state space
 def run_scipy(
     dt = 0.05,
     exti = 3,
+    t = 200,
     t0 = 0,
     u0 = np.array([0, 0]),  # u[0]=height u[1]=velocity
 ):
@@ -65,27 +66,27 @@ def run_scipy(
 
 def apogee(exti, u0, t, t0, dt=0.05):
 
-    f, time = run_scipy(dt, exti=exti, t0=t0, u0=u0)
+    f, time = run_scipy(dt=dt, exti=exti, t=t, t0=t0, u0=u0)
     return np.max(f[:, 0])
 
 
 def runsweep(headless=False, exti=[3], u0=[np.array([0, 0, 1 / 15])], t0=[4]):
     # initial conditions
-    # T=200
+    t=200
     dt = 0.05
 
     # run code
     u=[[] for i in range(len(exti))]
     time=[[] for i in range(len(exti))]
     for i in range(len(exti)):
-        u[i], time[i] = run_scipy(dt, u0=u0[i], exti=exti[i], t0=t0[i])
+        u[i], time[i] = run_scipy(dt=dt, exti=exti[i], t=t, u0=u0[i], t0=t0[i])
 
     if not headless:
         # plotting
         fig, (ax1_h, ax2_v, ax3_angle) = plt.subplots(1,3)
         for i in range(len(exti)):
             ax1_h.plot(time[i], u[i][:, 0], label=f"ext={Exts[exti[i]]}, angle={u0[i][2]:.2f}")
-            ax1_h.plot(time[i], [10000 * 0.3048 for t in time[i]], label="Goal height")
+            ax1_h.plot(time[i], np.full(len(time[i]), GOAL_HEIGHT_METERS), label="Goal height")
 
             ax2_v.plot(time[i], u[i][:, 1], label=f"ext={Exts[exti[i]]} angle={u0[i][2]:.2f}")
 
@@ -118,7 +119,7 @@ def run(headless=False, exti=3, u0=np.array([0, 0, 1 / 15]), t0=4):
         # plotting
         fig, (ax1_h, ax2_v, ax3_angle) = plt.subplots(1,3)
         ax1_h.plot(time, u[:, 0], label=f"ext={Exts[exti]}, angle={u0[2]:.2f}")
-        ax1_h.plot(time, [10000 * 0.3048 for t in time], label="Goal height")
+        ax1_h.plot(time, np.full(len(time), GOAL_HEIGHT_METERS), label="Goal height")
         ax1_h.legend()
         ax1_h.set_xlabel("time (s)")
         ax1_h.set_ylabel("Height(m)")
@@ -149,7 +150,7 @@ def run(headless=False, exti=3, u0=np.array([0, 0, 1 / 15]), t0=4):
 
 
 def eval(maxheight,currheight):
-    return abs(maxheight-10000/3.3)
+    return abs(maxheight-GOAL_HEIGHT_METERS)
 
 
 def lookup_table(angles, heights, verbose=True):
@@ -161,9 +162,9 @@ def lookup_table(angles, heights, verbose=True):
                 va=0
                 vb=1.1
                 u0=np.array([heights[hi],mach2v([va])[0],angles[ai]])
-                apogee_a=abs(apogee(exti,u0,200,t0=4)-10000/3.3)
+                apogee_a=abs(apogee(exti,u0,200,t0=4)-GOAL_HEIGHT_METERS)
                 u0=np.array([heights[hi],mach2v([vb])[0],angles[ai]])
-                apogee_b=abs(apogee(exti,u0,200,t0=4)-10000/3.3)
+                apogee_b=abs(apogee(exti,u0,200,t0=4)-GOAL_HEIGHT_METERS)
                 while(vb-va>Tol):
                     mid_v=(va+vb)/2
                     # print(mid_v,va,vb)

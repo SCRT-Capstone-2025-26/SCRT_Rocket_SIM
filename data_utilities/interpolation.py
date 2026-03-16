@@ -39,11 +39,11 @@ def fix_ext(drag_data, fixed_ext, exti=0, machi=1):
     return good_data
 
 
-def cd_init(fixed_ext):
+def drag_p_airden_fn(fixed_ext):
     drag_data = np.array(
         fix_ext(
             read_drag_data_np(
-                var_names=["Extension", "Mach", "Drag of all", "Altitude"]
+                col_names=["Extension", "Mach", "Drag of all", "Altitude"]
             ),
             fixed_ext,
         )[1:]
@@ -125,7 +125,7 @@ def laplacian(z, dx):
 
 if __name__ == "__main__":
     Exts = [0, 5, 15, 30]
-    Cd = [cd_init(ext) for ext in Exts]
+    Cd = [drag_p_airden_fn(ext) for ext in Exts]
     X = np.linspace(0, 1, 1000)
     for j in range(4):
         plt.plot(X, np.array([Cd[j](x) for x in X]))
