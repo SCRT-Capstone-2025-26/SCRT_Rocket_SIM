@@ -124,41 +124,6 @@ def laplacian(z, dx):
 
 
 if __name__ == "__main__":
-    # thrust=thrust_init()
-    # thrust2=pointwise_interp()
-    # N=200
-    # a,b=0,7
-    # x = np.linspace(a, b, N)
-    # y = np.linspace(a, b, N)
-    # X, Y = np.meshgrid(x, y)
-    # Z =np.array([[thrust2(X[i][j],Y[i][j]) for j in range(len(X[0]))] for i in range(len(X))])
-    # x = np.linspace(a, b, N-2)
-    # y = np.linspace(a, b, N-2)
-    # X2, Y2 = np.meshgrid(x, y)
-    # Z2 =laplacian(Z,(b-a)/N)
-    # fig = plt.figure(figsize=(10, 8))
-    # ax = plt.axes(projection='3d')
-    # ax.plot_surface(X, Y, Z, cmap='cool', alpha=0.8)
-    # # ax.plot_surface(X, Y, Z2, cmap='cool', alpha=0.8)
-    #
-    # ax.set_title('Thrust^2')
-    # ax.set_xlabel('x')
-    # ax.set_ylabel('y')
-    # ax.set_zlabel('z')
-    #
-    # plt.show()
-    #
-    # fig = plt.figure(figsize=(10, 8))
-    # ax = plt.axes(projection='3d')
-    # ax.plot_surface(X2, Y2, Z2, cmap='cool', alpha=0.8)
-    #
-    # ax.set_title('laplacian')
-    # ax.set_xlabel('x')
-    # ax.set_ylabel('y')
-    # ax.set_zlabel('z')
-    #
-    # plt.show()
-    # print(.15,thrust(.15))
     Exts = [0, 5, 15, 30]
     Cd = [cd_init(ext) for ext in Exts]
     X = np.linspace(0, 1, 1000)
