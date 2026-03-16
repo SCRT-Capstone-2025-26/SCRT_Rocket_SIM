@@ -1,3 +1,6 @@
+# Ignore save numpy files
+*.npy
+
 # ignore potentially large run data folders
 */runs/*
 

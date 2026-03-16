@@ -1,6 +1,8 @@
 # TODO add some common sense tests to verify this function
 from scipy.interpolate import make_interp_spline
+from scipy.ndimage import convolve
 from .dataimport_utilities import np_thrust_data, read_drag_data_np
+from .equations_n_constants import air_density
 from .eng_to_csv import eng_to_csv
 import os
 
@@ -29,7 +31,6 @@ def thrust_init():
 
 # finds all the drag data with the extension fixed extension
 def fix_ext(drag_data, fixed_ext, exti=0, machi=1):
-    print(len(drag_data))
     good_data = [[] for j in range(len(drag_data))]
     for i in range(len(drag_data[exti])):
         if drag_data[exti][i] == fixed_ext:
@@ -50,9 +51,6 @@ def cd_init(fixed_ext):
     sort_indices = np.argsort(drag_data[0, :])
     drag_data = drag_data[:, sort_indices]
 
-    # print(drag_data)
-    def air_density(h):
-        return 1.2 * 0.99988**h
 
     machsteps = drag_data[0, :]
     drag = np.array(
@@ -108,23 +106,26 @@ def pointwise_interp():
     return secondinterp
 
 
-def laplacian(z, dx):
-    return np.array(
-        [
-            [
-                (
-                    4 * z[i + 1][j + 1]
-                    - z[i + 2][j + 1]
-                    - z[i + 1][j + 2]
-                    - z[i][j + 1]
-                    - z[i + 1][j]
-                )
-                * dx
-                for j in range(len(z[0]) - 2)
-            ]
-            for i in range(len(z) - 2)
-        ]
-    )
+# Old, need to ensure new version is compatible with old version
+# def laplacian(z, dx):
+#     return np.array(
+#         [
+#             [
+#                 (4 * z[i + 1][j + 1] - z[i + 2][j + 1]- z[i + 1][j + 2]- z[i][j + 1]- z[i + 1][j]) 
+#                 * dx for j in range(len(z[0]) - 2)
+#             ]
+#             for i in range(len(z) - 2)
+#         ]
+#     )
+
+# TODO ensure new kernel version is compatible with the old version
+def laplacian_2(z, dx):
+    kernel = np.array([[ 0, -1,  0],
+                       [-1,  4, -1],
+                       [ 0, -1,  0]])
+    
+    # TODO choose better mode to relfect intended behavior
+    return convolve(z, kernel, mode='nearest') * dx
 
 
 if __name__ == "__main__":
