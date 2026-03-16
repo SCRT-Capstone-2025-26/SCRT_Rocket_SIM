@@ -10,11 +10,11 @@ import matplotlib.pyplot as plt
 ## output u such that u'=f and u(0)=u0
 
 
-def scipyintegrate(u0, scheme, f, t, dt, t0=0):
+def scipyintegrate(u0, scheme, f, max_t, dt, t0=0):
     # print(u0,'u0')
     u = [u0]
     t = [t0]
-    solution = scheme(f, t0, u0, t, max_step=dt)
+    solution = scheme(f, t0, u0, max_t, max_step=dt)
     while u[-1][1] >= -10 and t[-1] < t:  #
         solution.step()
         t += [solution.t]
