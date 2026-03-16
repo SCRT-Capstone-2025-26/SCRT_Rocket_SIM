@@ -1,13 +1,18 @@
-#TODO add some common sense tests to verify this function
-from scipy.interpolate import  make_interp_spline
-from dataimport_utilities import np_thrust_data
-from eng_to_csv import eng_to_csv
+# TODO add some common sense tests to verify this function
+from scipy.interpolate import make_interp_spline
+from scipy.ndimage import convolve
+from .dataimport_utilities import np_thrust_data, read_drag_data_np
+from .equations_n_constants import air_density, meters2feet
+from .eng_to_csv import eng_to_csv
 import os
 
+import numpy as np
+import matplotlib.pyplot as plt
 
-#returns the estimated amount of force at a specific point in time
+
+# returns the estimated amount of force at a specific point in time
 def thrust_init():
-#TODO: make this file a non test file.
+    # TODO: make this file a non test file.
     directory_name = "../data/runs/20251114_191130/input/"
     try:
         os.mkdir(directory_name)
@@ -18,12 +23,53 @@ def thrust_init():
     spec_filepath = "../data/runs/20251114_191130/input/motor_spec.csv"
     eng_to_csv(src_filepath, dst_filepath, spec_filepath)
 
-    Thrust_data=np_thrust_data("../data/runs/20251114_191130/input/thrust_motor.csv")
-    timesteps=Thrust_data[:,0]
-    Thrust=Thrust_data[:,1]
-    return make_interp_spline(timesteps, Thrust,k=5)
+    thrust_data = np_thrust_data("../data/runs/20251114_191130/input/thrust_motor.csv")
+    timesteps = thrust_data[:, 0]
+    thrust = thrust_data[:, 1]
+    return make_interp_spline(timesteps, thrust, k=5)
+
+
+# finds all the drag data with the extension fixed extension
+def find_drag_from_exti(drag_data, fixed_ext, exti=0, err=0.0001):
+    good_data = [[] for j in range(len(drag_data))]
+    for i in range(len(drag_data[exti])):
+        if np.abs(drag_data[exti][i] - fixed_ext) < err:
+            for j in range(len(good_data)):
+                good_data[j] += [drag_data[j][i]]
+    return good_data
+
+
+def drag_p_airden_fn(fixed_ext):
+    drag_data = np.array(
+        find_drag_from_exti(
+            read_drag_data_np(
+                col_names=["Extension", "Mach", "Drag of all", "Altitude"]
+            ),
+            fixed_ext,
+        )[1:]
+    )
+    sort_indices = np.argsort(drag_data[0, :])
+    drag_data = drag_data[:, sort_indices]
+
+
+    machsteps = drag_data[0, :]
+    drag = drag_data[1, :] / air_density(meters2feet(drag_data[2, :]))
+    return make_interp_spline(machsteps, drag, k=1)
+
+
+def laplacian(z, dx):
+    kernel = np.array([[ 0, -1,  0],
+                       [-1,  4, -1],
+                       [ 0, -1,  0]])
+    
+    # TODO choose better mode to relfect intended behavior
+    return convolve(z, kernel, mode='nearest') * dx
 
 
 if __name__ == "__main__":
-    thrust=thrust_init()
-    print(.15,thrust(.15))
+    Exts = [0, 5, 15, 30]
+    Cd = [drag_p_airden_fn(ext) for ext in Exts]
+    X = np.linspace(0, 1, 1000)
+    for j in range(4):
+        plt.plot(X, np.array([Cd[j](x) for x in X]))
+    plt.show()

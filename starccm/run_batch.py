@@ -50,7 +50,7 @@ class ContinuousParameter:
         cls, name: str, properties: ParameterDict
     ) -> ContinuousParameter:
         if " " in name:
-            raise BadParameterName(
+            raise BadParameterNameError(
                 "design parameters with spaces in their name are not currently supported"
             )
         else:
@@ -90,7 +90,7 @@ class ConstantParameter:
     @classmethod
     def from_name_dict(cls, name: str, properties: ParameterDict):
         if " " in name:
-            raise BadParameterName(
+            raise BadParameterNameError(
                 "design parameters with spaces in their name are not currently supported"
             )
         else:
@@ -150,19 +150,19 @@ class Config:
     file_hash: bytes
 
 
-class BadStarCCMVersion(Exception):
+class BadStarCCMVersionError(Exception):
     pass
 
 
-class ConfigNotFound(Exception):
+class ConfigNotFoundError(Exception):
     pass
 
 
-class BadParameterName(Exception):
+class BadParameterNameError(Exception):
     pass
 
 
-class BadParameter(Exception):
+class BadParameterError(Exception):
     pass
 
 
@@ -202,7 +202,7 @@ def get_config_path() -> pathlib.Path:
     config_path = pathlib.Path(raw_args.config)
 
     if not config_path.exists():
-        raise ConfigNotFound(f"configuration file not found at path {config_path}")
+        raise ConfigNotFoundError(f"configuration file not found at path {config_path}")
     else:
         return config_path
 
@@ -254,7 +254,7 @@ def parse_parameter(name: str, config_dict: dict) -> Parameter:
     elif keys == ConstantParameter.KEYS:
         return ConstantParameter.from_name_dict(name, config_dict)
     else:
-        raise BadParameter(
+        raise BadParameterError(
             f"invalid values set for parameter {name}; please double check your configuration"
         )
 
@@ -342,7 +342,7 @@ def starccm_version_to_path(version: str) -> pathlib.Path:
     try:
         return next(starccm_exes)
     except StopIteration as e:
-        raise BadStarCCMVersion(f"STAR-CCM+ version not found: {version}") from e
+        raise BadStarCCMVersionError(f"STAR-CCM+ version not found: {version}") from e
 
 
 def dict_to_options(options_dict: dict[str, str]) -> list[str]:

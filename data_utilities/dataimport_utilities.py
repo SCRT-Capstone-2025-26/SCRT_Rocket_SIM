@@ -1,6 +1,8 @@
 import csv
 import numpy as np
 import dataclasses
+from .equations_n_constants import STD_DRAG_CSV_LIST, STD_DRAG_COL_NAMES
+
 
 def read_thrust_data(filename):
     array = []
@@ -9,8 +11,10 @@ def read_thrust_data(filename):
             array += [line]
     return array
 
+
 def np_thrust_data(filename):
     return np.array([[float(x) for x in y] for y in read_thrust_data(filename)[1:]])
+
 
 def read_eng_thrustfile(filename):
     array = []
@@ -24,13 +28,15 @@ def read_eng_thrustfile(filename):
                 header_values = line.strip().split(" ")
                 if len(header_values) < 7:
                     return -1
-                header_line = {"motor_name":header_values[0],
-                               "diameter":header_values[1],
-                               "length":header_values[2],
-                               "delays":header_values[3],
-                               "prop_weight":header_values[4],
-                               "tot_weight":header_values[5],
-                               "manufacturer":header_values[6]}
+                header_line = {
+                    "motor_name": header_values[0],
+                    "diameter": header_values[1],
+                    "length": header_values[2],
+                    "delays": header_values[3],
+                    "prop_weight": header_values[4],
+                    "tot_weight": header_values[5],
+                    "manufacturer": header_values[6],
+                }
                 array += [header_line]
             else:
                 array += [line.strip().split(" ")]
@@ -38,7 +44,7 @@ def read_eng_thrustfile(filename):
 
 
 @dataclasses.dataclass
-class DragPoint:
+class DragPoint:  # TODO:make this reflect actual CSVs
     # degrees from horizontal (ccw)
     angle_of_attack: float
 
@@ -50,26 +56,83 @@ class DragPoint:
     drag: float
 
     # TODO: wind speed and temperature
-    
+
+
+def read_csv_to_list_of_lists(filename):
+    """Reads a CSV file and returns its content as a list of lists. (Specifically as Strings)"""
+    data = []
+    with open(filename, mode="r", newline="", encoding="utf-8") as file:
+        reader = csv.reader(file)
+        data = list(reader)
+    return data
+
+
+def find_index(word, csv_data):
+    # Finds the index of a specific substring in the header
+    # in the list of lists created by the
+    # read_csv_to_list_of_lists function
+    for i in range(len(csv_data[0])):
+        if word in csv_data[0, i] and csv_data[1, i] != "null":
+            # print(csv_data[1,i])
+            return i
+
+
+# Input:
+#     csv_list: a list of csv filepath strings.
+#     VarNames: a list of substrings in the headers you want data from
+#         Default values of ['Extension','Mach','Drag Coeff']
+def read_drag_data_np(
+    csv_files=STD_DRAG_CSV_LIST,
+    col_names=STD_DRAG_COL_NAMES,
+):  # list of substrings in the headers for which you want data
+    import numpy as np
+
+    # initialize a list for each Variable
+    vars = [[] for i in range(len(col_names))] 
+    for csv_item in csv_files:
+        # get list version of each CSV as a numpy array
+        csv_data = np.array(read_csv_to_list_of_lists(csv_item)) 
+         # adds each variable into it's specific list
+        for vari in range(len(vars)):
+            vars[vari] += [
+                float(csv_data[:, find_index(col_names[vari], csv_data)][i + 1])
+                for i in range(len(csv_data) - 1)
+            ]
+    for vari in range(len(vars)):
+        vars[vari] = np.array(vars[vari])
+    # print(Vars)
+    return vars
+
 
 def read_drag_data(filename):
     points = []
-
-    with open(filename, "r") as file:
-        for line in csv.reader(file):
-            point = DragPoint(
-                angle_of_attack=line[0],
-                ship_velocity_x=line[1],
-                drag=line[2]
-            )
-            points.append(point)
-
+    line = read_drag_data_np(
+        csv_files=[filename], col_names=["Extension", "Mach", "Drag Coeff"]
+    )
+    # TODO: changes VarNames to match the lines in DragPoint
+    for i in range(len(line[1])):
+        point = DragPoint(
+            angle=line[0][i],
+            wind_speed=line[1][i],
+            temperature=line[2][i],
+            ship_speed=line[3][i],
+            drag=line[4][i],
+        )
+        points.append(point)
     return points
-    
+
 
 if __name__ == "__main__":
-    print(read_eng_thrustfile("./sample_datasets/AeroTech_N2000W.eng"))
+    # Example trustfile reading
+    print(read_eng_thrustfile("../sample_datasets/AeroTech_N2000W.eng"))
 
+    # Example read_drag_data_np
+    # read_drag_data_np(
+    # csv_list=['../sample_datasets/SupSonicSweep5_013126_FullData.csv',
+    #       '../sample_datasets/SupSonicSweep2_BEAVS_012926_FullData.csv',
+    #       '../sample_datasets/SupSonicSweep2_012826_data.csv',
+    #       '../sample_datasets/SupSonicSweep4_013026_FullData.csv'],
+    #       # '../sample_datasets/SimNoaMaxStyle.csv'],
 
-
-
+    #       # '../sample_datasets/NoaExt1DCdMach.csv'], # list of CSVs to be used
+    #     VarNames=['Extension','Mach','Drag Coeff'])
