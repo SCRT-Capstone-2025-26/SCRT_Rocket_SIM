@@ -24,7 +24,6 @@ Cd = [cd_init(ext) for ext in Exts]
 
 
 def drag(h, v, theta, exti, t):
-    newexti=exti+0
     if t < 4 or theta * 180 / pi > 20:
         exti = 0
     # TODO make cleaner, perhaps a class
@@ -64,7 +63,7 @@ def run_scipy(
     return scipyintegrate(u0, scipy.integrate.RK45, f, t, dt, t0=t0)
 
 
-def apogee(exti, u0, t, t0, dt=0.0005):
+def apogee(exti, u0, t, t0, dt=0.05):
 
     f, time = run_scipy(dt, exti=exti, t0=t0, u0=u0)
     return np.max(f[:, 0])
