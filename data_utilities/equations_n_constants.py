@@ -10,6 +10,8 @@ BODY_MASS = 15
 # TODO add more decimal points
 MACH_TO_METERS_SEC =343.0
 
+METERS_TO_FEET = 3.28084
+
 # Equations
 
 def air_density(h):
@@ -30,3 +32,7 @@ def motor_mass(t):
 
 def total_mass(t):
     return BODY_MASS + motor_mass(t)
+
+# Note, needs to operate on lists as well
+def meters2feet(m):
+    return m * METERS_TO_FEET

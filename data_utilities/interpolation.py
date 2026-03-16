@@ -2,7 +2,7 @@
 from scipy.interpolate import make_interp_spline
 from scipy.ndimage import convolve
 from .dataimport_utilities import np_thrust_data, read_drag_data_np
-from .equations_n_constants import air_density
+from .equations_n_constants import air_density, meters2feet
 from .eng_to_csv import eng_to_csv
 import os
 
@@ -53,12 +53,7 @@ def cd_init(fixed_ext):
 
 
     machsteps = drag_data[0, :]
-    drag = np.array(
-        [
-            drag_data[1, i] / air_density(drag_data[2, i] * 3.28084)
-            for i in range(len(drag_data[1, :]))
-        ]
-    )
+    drag = drag_data[1, :] / air_density(meters2feet(drag_data[2, :]))
     return make_interp_spline(machsteps, drag, k=1)
 
 
@@ -119,7 +114,7 @@ def pointwise_interp():
 #     )
 
 # TODO ensure new kernel version is compatible with the old version
-def laplacian_2(z, dx):
+def laplacian(z, dx):
     kernel = np.array([[ 0, -1,  0],
                        [-1,  4, -1],
                        [ 0, -1,  0]])
