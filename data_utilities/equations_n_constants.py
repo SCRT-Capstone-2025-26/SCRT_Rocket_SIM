@@ -35,6 +35,10 @@ def mach2v(v):
     return MACH_TO_METERS_SEC * np.array(v)
 
 
+def v2mach(mach):
+    return np.array(mach) / MACH_TO_METERS_SEC
+
+
 def thrust(t):
     return 3000 if t < 4 else 0
 

@@ -30,10 +30,10 @@ def thrust_init():
 
 
 # finds all the drag data with the extension fixed extension
-def fix_ext(drag_data, fixed_ext, exti=0, machi=1):
+def find_drag_from_exti(drag_data, fixed_ext, exti=0, err=0.0001):
     good_data = [[] for j in range(len(drag_data))]
     for i in range(len(drag_data[exti])):
-        if drag_data[exti][i] == fixed_ext:
+        if np.abs(drag_data[exti][i] - fixed_ext) < err:
             for j in range(len(good_data)):
                 good_data[j] += [drag_data[j][i]]
     return good_data
@@ -41,7 +41,7 @@ def fix_ext(drag_data, fixed_ext, exti=0, machi=1):
 
 def drag_p_airden_fn(fixed_ext):
     drag_data = np.array(
-        fix_ext(
+        find_drag_from_exti(
             read_drag_data_np(
                 col_names=["Extension", "Mach", "Drag of all", "Altitude"]
             ),
@@ -57,20 +57,6 @@ def drag_p_airden_fn(fixed_ext):
     return make_interp_spline(machsteps, drag, k=1)
 
 
-
-# Old, need to ensure new version is compatible with old version
-# def laplacian(z, dx):
-#     return np.array(
-#         [
-#             [
-#                 (4 * z[i + 1][j + 1] - z[i + 2][j + 1]- z[i + 1][j + 2]- z[i][j + 1]- z[i + 1][j]) 
-#                 * dx for j in range(len(z[0]) - 2)
-#             ]
-#             for i in range(len(z) - 2)
-#         ]
-#     )
-
-# TODO ensure new kernel version is compatible with the old version
 def laplacian(z, dx):
     kernel = np.array([[ 0, -1,  0],
                        [-1,  4, -1],

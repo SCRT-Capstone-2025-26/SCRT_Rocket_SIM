@@ -6,7 +6,7 @@ from integration import scipyintegrate
 # from data_utilities.dataimport_utilities import np_thrust_data,read_drag_data_np
 
 from data_utilities.interpolation import drag_p_airden_fn
-from data_utilities.equations_n_constants import air_density, thrust, total_mass, mach2v, GRAVITY, GOAL_HEIGHT_METERS
+from data_utilities.equations_n_constants import air_density, thrust, total_mass, mach2v, v2mach, GRAVITY, GOAL_HEIGHT_METERS
 import scipy
 
 ##################CD is actually just drag rn
@@ -27,19 +27,23 @@ def drag(h, v, theta, exti, t):
     if t < 4 or theta * 180 / pi > 20:
         exti = 0
     # TODO make cleaner, perhaps a class
+    next_dragdata = air_density(h) * Cd[exti](v2mach(v))
     global Dragdata
-    Dragdata += [air_density(h) * Cd[exti](v / 343)]
-    return air_density(h) * Cd[exti](v / 343)
+    Dragdata += [next_dragdata]
+    return next_dragdata
 
 
 # acceleration=-(A*rho*Cd*v^2+thrust)/m+g
+# TODO add derivation documentation
 def accel(t, u, exti):
     h, v, theta = u
     return (-drag(h, v, theta, exti, t) + thrust(t)) / total_mass(t) + GRAVITY
 
 
 # FDS bs
-def f_w_ext(t, u, exti):  # the derivative of the state space
+# the derivative of the state space
+# forcing function f for finite difference scheme accountign for extention
+def f_w_ext(t, u, exti): 
     acceleration = accel(t, u, exti)
     return np.array(
         [
