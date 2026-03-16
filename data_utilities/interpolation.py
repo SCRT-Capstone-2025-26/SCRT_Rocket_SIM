@@ -21,10 +21,10 @@ def thrust_init():
     spec_filepath = "../data/runs/20251114_191130/input/motor_spec.csv"
     eng_to_csv(src_filepath, dst_filepath, spec_filepath)
 
-    Thrust_data = np_thrust_data("../data/runs/20251114_191130/input/thrust_motor.csv")
-    timesteps = Thrust_data[:, 0]
-    Thrust = Thrust_data[:, 1]
-    return make_interp_spline(timesteps, Thrust, k=5)
+    thrust_data = np_thrust_data("../data/runs/20251114_191130/input/thrust_motor.csv")
+    timesteps = thrust_data[:, 0]
+    thrust = thrust_data[:, 1]
+    return make_interp_spline(timesteps, thrust, k=5)
 
 
 # finds all the drag data with the extension fixed extension
@@ -38,11 +38,11 @@ def fix_ext(drag_data, fixed_ext, exti=0, machi=1):
     return good_data
 
 
-def Cd_init(fixed_ext):
+def cd_init(fixed_ext):
     drag_data = np.array(
         fix_ext(
             read_drag_data_np(
-                VarNames=["Extension", "Mach", "Drag of all", "Altitude"]
+                var_names=["Extension", "Mach", "Drag of all", "Altitude"]
             ),
             fixed_ext,
         )[1:]
@@ -51,13 +51,13 @@ def Cd_init(fixed_ext):
     drag_data = drag_data[:, sort_indices]
 
     # print(drag_data)
-    def AirDensity(h):
+    def air_density(h):
         return 1.2 * 0.99988**h
 
     machsteps = drag_data[0, :]
     drag = np.array(
         [
-            drag_data[1, i] / AirDensity(drag_data[2, i] * 3.28084)
+            drag_data[1, i] / air_density(drag_data[2, i] * 3.28084)
             for i in range(len(drag_data[1, :]))
         ]
     )
@@ -83,8 +83,8 @@ def pointwise_interp():
     #     data=np.array(data)
     #     #TODO replace everything above with real data
 
-    [ext, mach, Cd] = read_drag_data_np()
-    data = [[Cd[i], ext[i], mach[i]] for i in range(len(Cd))]
+    [ext, mach, cd] = read_drag_data_np()
+    data = [[cd[i], ext[i], mach[i]] for i in range(len(cd))]
     # data=[[1,1,1],[2,2,2],[3,1,2],[4,2,3],[5,1,3],[6,2,1]]
     data = sorted(data, key=lambda tup: tup[1])
     data = sorted(data, key=lambda tup: tup[2])
@@ -108,21 +108,21 @@ def pointwise_interp():
     return secondinterp
 
 
-def laplacian(Z, dx):
+def laplacian(z, dx):
     return np.array(
         [
             [
                 (
-                    4 * Z[i + 1][j + 1]
-                    - Z[i + 2][j + 1]
-                    - Z[i + 1][j + 2]
-                    - Z[i][j + 1]
-                    - Z[i + 1][j]
+                    4 * z[i + 1][j + 1]
+                    - z[i + 2][j + 1]
+                    - z[i + 1][j + 2]
+                    - z[i][j + 1]
+                    - z[i + 1][j]
                 )
                 * dx
-                for j in range(len(Z[0]) - 2)
+                for j in range(len(z[0]) - 2)
             ]
-            for i in range(len(Z) - 2)
+            for i in range(len(z) - 2)
         ]
     )
 
@@ -164,7 +164,7 @@ if __name__ == "__main__":
     # plt.show()
     # print(.15,thrust(.15))
     Exts = [0, 5, 15, 30]
-    Cd = [Cd_init(ext) for ext in Exts]
+    Cd = [cd_init(ext) for ext in Exts]
     X = np.linspace(0, 1, 1000)
     for j in range(4):
         plt.plot(X, np.array([Cd[j](x) for x in X]))

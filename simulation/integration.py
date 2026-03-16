@@ -10,12 +10,12 @@ import matplotlib.pyplot as plt
 ## output u such that u'=f and u(0)=u0
 
 
-def scipyintegrate(u0, scheme, f, T, dt, t0=0):
+def scipyintegrate(u0, scheme, f, max_t, dt, t0=0):
     # print(u0,'u0')
     u = [u0]
     t = [t0]
-    solution = scheme(f, t0, u0, T, max_step=dt)
-    while u[-1][1] >= -10 and t[-1] < T:  #
+    solution = scheme(f, t0, u0, max_t, max_step=dt)
+    while u[-1][1] >= -10 and t[-1] < max_t:  #
         solution.step()
         t += [solution.t]
         u += [solution.y]
@@ -25,11 +25,11 @@ def scipyintegrate(u0, scheme, f, T, dt, t0=0):
 
 
 # Finite Difference Scheme(FDS) integrator
-def integrate(u0, scheme, f, T, dt):
+def integrate(u0, scheme, f, t, dt):
     u = u0
     print(u)
-    N = ceil(T / dt)
-    for n in range(N):
+    num_steps = ceil(t / dt)
+    for n in range(num_steps):
         u += [scheme(f, dt * n, dt, u)]
         if u[-1][0] < 0:
             return u
@@ -42,7 +42,7 @@ def double_step(scheme):
     )
 
 
-def integrate_adaptive(u0, scheme, f, T, dt, t0=0, batch=1, scheme2=None, tol=None):
+def integrate_adaptive(u0, scheme, f, t, dt, t0=0, batch=1, scheme2=None, tol=None):
     if tol is None:
         tol = dt / 1000
     if scheme2 is None:
@@ -50,7 +50,7 @@ def integrate_adaptive(u0, scheme, f, T, dt, t0=0, batch=1, scheme2=None, tol=No
     u = [u0[0] for i in range(batch + 1)]
     t = [t0 for i in range(batch + 1)]
     print(u)
-    while t[-1] < T + t0:
+    while t[-1] < t + t0:
         err = np.linalg.norm(scheme(f, t[-1], dt, u) - scheme2(f, t[-1], dt, u))
         # err/=np.linalg.norm(scheme(f,t[-1],dt,u))
         if err > tol:
@@ -63,7 +63,7 @@ def integrate_adaptive(u0, scheme, f, T, dt, t0=0, batch=1, scheme2=None, tol=No
         for i in range(batch):
             t += [t[-1] + dt]
             u += [scheme(f, t[-1], dt, u)]
-            if u[-1][0] < 0 or t[-1] > T:
+            if u[-1][0] < 0 or t[-1] > t:
                 return np.array(u), np.array(t)
     return np.array(u), np.array(t)
 

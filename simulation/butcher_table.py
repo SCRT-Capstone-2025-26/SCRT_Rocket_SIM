@@ -2,7 +2,7 @@ import numpy as np
 from utilities import iterate
 
 
-def Butcher_Tableaux(a, c, b, N=20, Err=0.00001):
+def butcher_tableaux(a, c, b, n=20, err=0.00001):
     k = [0 for i in range(len(a))]
     csum = [0 for i in range(len(a))]
     print(len(a), "len(a)")
@@ -31,7 +31,7 @@ def Butcher_Tableaux(a, c, b, N=20, Err=0.00001):
     )
 
 
-def Butcher_Table(a, b, c):
+def butcher_table(a, b, c):
     def k(f, t, dt, u, i):
         if i >= 0:
             asum = np.array([0.0, 0.0])
@@ -54,7 +54,7 @@ def Butcher_Table(a, b, c):
     )
 
 
-def Butcher_Table2(a, b, c):
+def butcher_table_2(a, b, c):
     def calc(f, t, dt, u):
         k = []
         for i in range(len(c)):

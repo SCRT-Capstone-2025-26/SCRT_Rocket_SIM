@@ -77,11 +77,11 @@ def find_index(word, csv_data):
 
 
 # Input:
-#     CSVs: a list of csv filepath strings.
+#     csv_list: a list of csv filepath strings.
 #     VarNames: a list of substrings in the headers you want data from
 #         Default values of ['Extension','Mach','Drag Coeff']
 def read_drag_data_np(
-    CSVs=[
+    csv_list=[
         "sample_datasets/SupSonicSweep2_012826_data.csv",
         "sample_datasets/SupSonicSweep4_013026_FullData.csv",
         "sample_datasets/SupSonicSweep5_013126_FullData.csv",
@@ -90,30 +90,31 @@ def read_drag_data_np(
     # 'sample_datasets/SupSonicSweep7_SATurb_020426_FullData.csv',
     # 'sample_datasets/SupSonicSweep8_SATurb_020526_FullData.csv'],
     # '../sample_datasets/NoaExt1DCdMach.csv'], # list of CSVs to be used
-    VarNames=["Extension", "Mach", "Drag Coeff"],
+    var_names=["Extension", "Mach", "Drag Coeff"],
 ):  # list of substrings in the headers for which you want data
     import numpy as np
 
-    Vars = [[] for i in range(len(VarNames))]  # initialize a list for each Variable
-    for CSV in CSVs:
-        csv_data = np.array(
-            read_csv_to_list_of_lists(CSV)
-        )  # get list version of each CSV as a numpy array
-        for vari in range(len(Vars)):  # adds each variable into it's specific list
-            Vars[vari] += [
-                float(csv_data[:, find_index(VarNames[vari], csv_data)][i + 1])
+    # initialize a list for each Variable
+    vars = [[] for i in range(len(var_names))] 
+    for csv_item in csv_list:
+        # get list version of each CSV as a numpy array
+        csv_data = np.array(read_csv_to_list_of_lists(csv_item)) 
+         # adds each variable into it's specific list
+        for vari in range(len(vars)):
+            vars[vari] += [
+                float(csv_data[:, find_index(var_names[vari], csv_data)][i + 1])
                 for i in range(len(csv_data) - 1)
             ]
-    for vari in range(len(Vars)):
-        Vars[vari] = np.array(Vars[vari])
+    for vari in range(len(vars)):
+        vars[vari] = np.array(vars[vari])
     # print(Vars)
-    return Vars
+    return vars
 
 
 def read_drag_data(filename):
     points = []
     line = read_drag_data_np(
-        CSVs=[filename], VarNames=["Extension", "Mach", "Drag Coeff"]
+        csv_list=[filename], var_names=["Extension", "Mach", "Drag Coeff"]
     )
     # TODO: changes VarNames to match the lines in DragPoint
     for i in range(len(line[1])):
@@ -134,7 +135,7 @@ if __name__ == "__main__":
 
     # Example read_drag_data_np
     # read_drag_data_np(
-    # CSVs=['../sample_datasets/SupSonicSweep5_013126_FullData.csv',
+    # csv_list=['../sample_datasets/SupSonicSweep5_013126_FullData.csv',
     #       '../sample_datasets/SupSonicSweep2_BEAVS_012926_FullData.csv',
     #       '../sample_datasets/SupSonicSweep2_012826_data.csv',
     #       '../sample_datasets/SupSonicSweep4_013026_FullData.csv'],
