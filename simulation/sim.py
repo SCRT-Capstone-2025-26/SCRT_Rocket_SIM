@@ -89,6 +89,43 @@ def apogee(exti, U0, T, t0, dt=0.0005):
     return np.max(U[:, 0])
 
 
+def runsweep(headless=False, exti=[3], U0=[np.array([0, 0, 1 / 15])], t0=[4]):
+    # initial conditions
+    # T=200
+    dt = 0.05
+
+    # run code
+    def F(t, u):
+        return Fext(t, u, exti)
+    U=[[] for i in range(len(exti))]
+    Time=[[] for i in range(len(exti))]
+    for i in range(len(exti)):
+        U[i], Time[i] = run_scipy(dt, U0=U0[i], exti=exti[i], t0=t0[i])
+
+    if not headless:
+        # plotting
+        fig, (ax1_h, ax2_v, ax3_angle) = plt.subplots(1,3)
+        for i in range(len(exti)):
+            ax1_h.plot(Time[i], U[i][:, 0], label=f"ext={Exts[exti[i]]}, angle={U0[i][2]:.2f}")
+            ax1_h.plot(Time[i], [10000 * 0.3048 for t in Time[i]], label="Goal height")
+
+            ax2_v.plot(Time[i], U[i][:, 1], label=f"ext={Exts[exti[i]]} angle={U0[i][2]:.2f}")
+
+            ax3_angle.plot(Time[i], U[i][:, 2], label=f"ext={Exts[exti[i]]} angle={U0[i][2]:.2f}")
+        ax1_h.legend()
+        ax1_h.set_xlabel("time (s)")
+        ax1_h.set_ylabel("Height(m)")
+        ax1_h.set_title("Flight Altitude Graph")
+        ax2_v.legend()
+        ax2_v.set_xlabel("time (s)")
+        ax2_v.set_ylabel("velocity(m/s)")
+        ax2_v.set_title("Flight Velocity Graph")
+        ax3_angle.legend()
+        ax3_angle.set_xlabel("time (s)")
+        ax3_angle.set_ylabel("radians")
+        ax3_angle.set_title("Flight Angle Graph")
+        fig.show()
+
 def run(headless=False, exti=3, U0=np.array([0, 0, 1 / 15]), t0=4):
     # initial conditions
     # T=200
@@ -174,8 +211,7 @@ def mach2v(V):
 
 
 if __name__ == "__main__":
-        run(exti=3, U0=np.array([0, 0, 20 * pi / 180]), t0=0)
-        run(exti=3, U0=np.array([0, 0, 0]), t0=0)
+        runsweep(exti=[3,3], U0=[np.array([0, 0, 20 * pi / 180]),np.array([0, 0, 0])], t0=[0,0])
         plt.show()
         run(exti=3, U0=np.array([0, 0, 5 * pi / 180]), t0=0)
         run(exti=0, U0=np.array([0, 0, 5 * pi / 180]), t0=0)
