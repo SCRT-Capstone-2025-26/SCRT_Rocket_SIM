@@ -57,49 +57,6 @@ def drag_p_airden_fn(fixed_ext):
     return make_interp_spline(machsteps, drag, k=1)
 
 
-def pointwise_interp():
-    # #TODO: use something that is actually Cd data
-    #     directory_name = "../data/runs/20251114_191130/input/"
-    #     try:
-    #         os.mkdir(directory_name)
-    #     except FileExistsError:
-    #         pass
-    #     src_filepath = "../sample_datasets/AeroTech_N2000W.eng"
-    #     dst_filepath = "../data/runs/20251114_191130/input/thrust_motor.csv"
-    #     spec_filepath = "../data/runs/20251114_191130/input/motor_spec.csv"
-    #     eng_to_csv(src_filepath, dst_filepath, spec_filepath)
-    #
-    #     Thrust_data=np_thrust_data("../data/runs/20251114_191130/input/thrust_motor.csv")
-    #     timesteps=Thrust_data[:,0]
-    #     Thrust=Thrust_data[:,1]
-    #     data=[[[Thrust[i]*Thrust[j],timesteps[i],timesteps[j]] for j in range(len(Thrust))] for i in range(len(Thrust))]
-    #     data=np.array(data)
-    #     #TODO replace everything above with real data
-
-    [ext, mach, cd] = read_drag_data_np()
-    data = [[cd[i], ext[i], mach[i]] for i in range(len(cd))]
-    # data=[[1,1,1],[2,2,2],[3,1,2],[4,2,3],[5,1,3],[6,2,1]]
-    data = sorted(data, key=lambda tup: tup[1])
-    data = sorted(data, key=lambda tup: tup[2])
-    length = 1
-    while data[length][2] == data[0][2]:
-        length += 1
-    data = np.array(data).reshape((len(data) // length, length, 3))
-    print(data, length)
-    # print(data[:,0,1])
-
-    # CAUTION: DOES NOT WORK:
-    firstinterps = [
-        make_interp_spline(data[i, :, 2], data[i, :, 0], k=5) for i in range(len(data))
-    ]
-
-    def secondinterp(x, y):
-        xsteps = data[:, 0, 1]
-        z = [f(y) for f in firstinterps]
-        return make_interp_spline(xsteps, z)(x)
-
-    return secondinterp
-
 
 # Old, need to ensure new version is compatible with old version
 # def laplacian(z, dx):
