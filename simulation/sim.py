@@ -41,11 +41,12 @@ Cd = [cd_init(ext) for ext in Exts]
 
 
 def drag(h, v, theta, exti, t):
+    newexti=exti+0
     if t < 4 or theta * 180 / pi > 20:
-        exti = 0
+        newexti = 0
     global Dragdata
-    Dragdata += [air_density(h) * Cd[exti](v / 343)]
-    return air_density(h) * Cd[exti](v / 343)
+    Dragdata += [air_density(h) * Cd[newexti](v / 343)]
+    return air_density(h) * Cd[newexti](v / 343)
 
 
 # acceleration=-(A*rho*Cd*v^2+thrust)/m+g
@@ -74,10 +75,9 @@ def run_scipy(
 ):
     t = 200
     dt = 0.05
-
     def f(t, u):
         return f_w_ext(t, u, exti)
-
+        
     return scipyintegrate(u0, scipy.integrate.RK45, f, t, dt, t0=t0)
 
 
@@ -94,20 +94,20 @@ def runsweep(headless=False, exti=[3], u0=[np.array([0, 0, 1 / 15])], t0=[4]):
 
     # run code
     u=[[] for i in range(len(exti))]
-    Time=[[] for i in range(len(exti))]
+    time=[[] for i in range(len(exti))]
     for i in range(len(exti)):
-        u[i], Time[i] = run_scipy(dt, u0=u0[i], exti=exti[i], t0=t0[i])
+        u[i], time[i] = run_scipy(dt, u0=u0[i], exti=exti[i], t0=t0[i])
 
     if not headless:
         # plotting
         fig, (ax1_h, ax2_v, ax3_angle) = plt.subplots(1,3)
         for i in range(len(exti)):
-            ax1_h.plot(Time[i], u[i][:, 0], label=f"ext={Exts[exti[i]]}, angle={u0[i][2]:.2f}")
-            ax1_h.plot(Time[i], [10000 * 0.3048 for t in Time[i]], label="Goal height")
+            ax1_h.plot(time[i], u[i][:, 0], label=f"ext={Exts[exti[i]]}, angle={u0[i][2]:.2f}")
+            ax1_h.plot(time[i], [10000 * 0.3048 for t in time[i]], label="Goal height")
 
-            ax2_v.plot(Time[i], u[i][:, 1], label=f"ext={Exts[exti[i]]} angle={u0[i][2]:.2f}")
+            ax2_v.plot(time[i], u[i][:, 1], label=f"ext={Exts[exti[i]]} angle={u0[i][2]:.2f}")
 
-            ax3_angle.plot(Time[i], u[i][:, 2], label=f"ext={Exts[exti[i]]} angle={u0[i][2]:.2f}")
+            ax3_angle.plot(time[i], u[i][:, 2], label=f"ext={Exts[exti[i]]} angle={u0[i][2]:.2f}")
         ax1_h.legend()
         ax1_h.set_xlabel("time (s)")
         ax1_h.set_ylabel("Height(m)")
@@ -207,8 +207,7 @@ def mach2v(v):
 if __name__ == "__main__":
         runsweep(exti=[3,3], u0=[np.array([0, 0, 20 * pi / 180]),np.array([0, 0, 0])], t0=[0,0])
         plt.show()
-        run(exti=3, u0=np.array([0, 0, 5 * pi / 180]), t0=0)
-        run(exti=0, u0=np.array([0, 0, 5 * pi / 180]), t0=0)
+        runsweep(exti=[0,3], u0=[np.array([0, 0, 0]),np.array([0, 0, 0])], t0=[0,0])
         plt.show()
         heights=[200*i+800 for i in range(11)]
         angles=[pi/180*i**2 for i in range(4)]
