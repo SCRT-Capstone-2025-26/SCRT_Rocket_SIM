@@ -1,5 +1,4 @@
 import numpy as np
-from math import ceil, sin
 import scipy
 import matplotlib.pyplot as plt
 
@@ -27,8 +26,8 @@ def scipyintegrate(u0, scheme, f, max_t, dt, t0=0):
 # Finite Difference Scheme(FDS) integrator
 def integrate(u0, scheme, f, t, dt):
     u = u0
-    print(u)
-    num_steps = ceil(t / dt)
+    # print(u)
+    num_steps = np.ceil(t / dt)
     for n in range(num_steps):
         u += [scheme(f, dt * n, dt, u)]
         if u[-1][0] < 0:
@@ -49,7 +48,7 @@ def integrate_adaptive(u0, scheme, f, t, dt, t0=0, batch=1, scheme2=None, tol=No
         scheme2 = double_step(scheme)
     u = [u0[0] for i in range(batch + 1)]
     t = [t0 for i in range(batch + 1)]
-    print(u)
+    # print(u)
     while t[-1] < t + t0:
         err = np.linalg.norm(scheme(f, t[-1], dt, u) - scheme2(f, t[-1], dt, u))
         # err/=np.linalg.norm(scheme(f,t[-1],dt,u))
@@ -72,11 +71,12 @@ if __name__ == "__main__":
     u, t = scipyintegrate(
         np.array([1.0, 0]),
         scipy.integrate.RK45,
-        lambda t, u: np.array([-u[1], sin(u[0])]),
+        lambda t, u: np.array([-u[1], np.sin(u[0])]),
         200,
         0.01,
         t0=-0.5,
     )
-    print(t, u[:, 0])
+    print("time steps: " + str(t))
+    print("u values: "+  str(u[:, 0]))
     plt.plot(t, u[:, 0])
     plt.show()

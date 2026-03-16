@@ -6,34 +6,17 @@ from integration import scipyintegrate
 # from data_utilities.dataimport_utilities import np_thrust_data,read_drag_data_np
 
 from data_utilities.interpolation import cd_init
+from data_utilities.equations_n_constants import air_density, thrust, total_mass, mach2v, GRAVITY
 import scipy
 
 ##################CD is actually just drag rn
 
+# TODO make class or something to get rid of usign a global object
 Dragdata = []
 
 
-# physical constants
+# physical constants and simple equations imported from data_utilities.equations_n_constants
 
-
-def air_density(h):
-    return 1.2 * 0.99988**h
-
-
-def thrust(t):
-    return 3000 if t < 4 else 0
-
-
-g = -10
-body_mass = 15
-
-
-def motor_mass(t):
-    return 10
-
-
-def total_mass(t):
-    return body_mass + motor_mass(t)
 
 
 Exts = [0, 5, 15, 30]
@@ -43,6 +26,7 @@ Cd = [cd_init(ext) for ext in Exts]
 def drag(h, v, theta, exti, t):
     if t < 4 or theta * 180 / pi > 20:
         exti = 0
+    # TODO make cleaner, perhaps a class
     global Dragdata
     Dragdata += [air_density(h) * Cd[exti](v / 343)]
     return air_density(h) * Cd[exti](v / 343)
@@ -51,7 +35,7 @@ def drag(h, v, theta, exti, t):
 # acceleration=-(A*rho*Cd*v^2+thrust)/m+g
 def accel(t, u, exti):
     h, v, theta = u
-    return (-drag(h, v, theta, exti, t) + thrust(t)) / total_mass(t) + g
+    return (-drag(h, v, theta, exti, t) + thrust(t)) / total_mass(t) + GRAVITY
 
 
 # FDS bs
@@ -61,19 +45,18 @@ def f_w_ext(t, u, exti):  # the derivative of the state space
         [
             u[1] * cos(u[2]),  # Change in Height
             acceleration,  # Change in Velocity
-            -g * sin(u[2]) / (u[1] + acceleration),  # Change in Zenith
+            -GRAVITY * sin(u[2]) / (u[1] + acceleration),  # Change in Zenith
         ]
     )
 
 
 def run_scipy(
-    dt,
-    exti=3,
-    t0=0,
-    u0=np.array([0, 0]),  # u[0]=height u[1]=velocity
+    dt = 0.05,
+    exti = 3,
+    t0 = 0,
+    u0 = np.array([0, 0]),  # u[0]=height u[1]=velocity
 ):
     t = 200
-    dt = 0.05
 
     def f(t, u):
         return f_w_ext(t, u, exti)
@@ -169,7 +152,7 @@ def eval(maxheight,currheight):
     return abs(maxheight-10000/3.3)
 
 
-def lookup_table(angles,heights):
+def lookup_table(angles, heights, verbose=True):
     lookup=[[[] for ai in angles] for hi in heights]
     for hi in range(len(heights)):
         for ai in range(len(angles)):
@@ -195,13 +178,10 @@ def lookup_table(angles,heights):
                         vb=mid_v
                         apogee_b=apogee_mid
                 optimal_vel_list+=[mid_v]
-            print(f"Height:{heights[hi]} Angle:{angles[ai]:.3f} vel diff:{100*(max(optimal_vel_list)-min(optimal_vel_list))/min(optimal_vel_list):.3f}%")
-            lookup[hi][ai]+=[optimal_vel_list]
+            if verbose:
+                print(f"Height:{heights[hi]} Angle:{angles[ai]:.3f} vel diff:{100*(max(optimal_vel_list)-min(optimal_vel_list))/min(optimal_vel_list):.3f}%")
+            lookup[hi][ai] += optimal_vel_list
     return lookup
-
-def mach2v(v):
-    # TODO add more decimal points
-    return [343.0 * v for v in v]
 
 
 if __name__ == "__main__":
