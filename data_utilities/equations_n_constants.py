@@ -1,4 +1,3 @@
-import numpy as np
 # Physical Constants
 
 GOAL_HEIGHT_METERS = 3048
@@ -33,11 +32,11 @@ def air_density(h):
 
 
 def mach2v(v):
-    return MACH_TO_METERS_SEC * np.array(v)
+    return MACH_TO_METERS_SEC * v
 
 
 def v2mach(mach):
-    return np.array(mach) / MACH_TO_METERS_SEC
+    return mach / MACH_TO_METERS_SEC
 
 
 def thrust(t):
