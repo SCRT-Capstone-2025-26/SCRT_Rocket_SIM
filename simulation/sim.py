@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+
 from numpy import sin, cos, pi
 import numpy as np
 from integration import scipyintegrate
@@ -97,25 +98,25 @@ def run(headless=False, exti=3, U0=np.array([0, 0, 1 / 15]), t0=4):
     def F(t, u):
         return Fext(t, u, exti)
 
-    U45, Time45 = run_scipy(dt, U0=U0, exti=exti, t0=t0)
+    U, Time = run_scipy(dt, U0=U0, exti=exti, t0=t0)
 
     if not headless:
         # plotting
         fig, (ax1_h, ax2_v, ax3_angle) = plt.subplots(1,3)
-        ax1_h.plot(Time45, U45[:, 0], label=f"ext={Exts[exti]}, angle={U0[2]:.2f}")
-        ax1_h.plot(Time45, [10000 * 0.3048 for t in Time45], label="Goal height")
+        ax1_h.plot(Time, U[:, 0], label=f"ext={Exts[exti]}, angle={U0[2]:.2f}")
+        ax1_h.plot(Time, [10000 * 0.3048 for t in Time], label="Goal height")
         ax1_h.legend()
         ax1_h.set_xlabel("time (s)")
         ax1_h.set_ylabel("Height(m)")
         ax1_h.set_title("Flight Altitude Graph")
 
-        ax2_v.plot(Time45, U45[:, 1], label=f"ext={Exts[exti]} angle={U0[2]:.2f}")
+        ax2_v.plot(Time, U[:, 1], label=f"ext={Exts[exti]} angle={U0[2]:.2f}")
         ax2_v.legend()
         ax2_v.set_xlabel("time (s)")
         ax2_v.set_ylabel("velocity(m/s)")
         ax2_v.set_title("Flight Velocity Graph")
 
-        ax3_angle.plot(Time45, U45[:, 2], label=f"ext={Exts[exti]} angle={U0[2]:.2f}")
+        ax3_angle.plot(Time, U[:, 2], label=f"ext={Exts[exti]} angle={U0[2]:.2f}")
         ax3_angle.legend()
         ax3_angle.set_xlabel("time (s)")
         ax3_angle.set_ylabel("radians")
