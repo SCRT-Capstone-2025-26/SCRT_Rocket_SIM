@@ -27,6 +27,7 @@ STD_DRAG_COL_NAMES = ["Extension", "Mach", "Drag Coeff"]
 
 # Equations
 
+# TODO consider local conditions
 def air_density(h):
     return 1.2 * 0.99988**h
 

@@ -20,14 +20,14 @@ Dragdata = []
 
 
 Exts = [0, 5, 15, 30]
-Cd = [drag_p_airden_fn(ext) for ext in Exts]
+drag_p_airden = [drag_p_airden_fn(ext) for ext in Exts]
 
 
 def drag(h, v, theta, exti, t):
     if t < 4 or theta * 180 / pi > 20:
         exti = 0
     # TODO make cleaner, perhaps a class
-    next_dragdata = air_density(h) * Cd[exti](v2mach(v))
+    next_dragdata = air_density(h) * drag_p_airden[exti](v2mach(v))
     global Dragdata
     Dragdata += [next_dragdata]
     return next_dragdata
@@ -37,7 +37,8 @@ def drag(h, v, theta, exti, t):
 # TODO add derivation documentation
 def accel(t, u, exti):
     h, v, theta = u
-    return (-drag(h, v, theta, exti, t) + thrust(t)) / total_mass(t) + GRAVITY
+    # TODO np.cos(theta)*GRAVITY is a good approximation needs to be fixed
+    return (-drag(h, v, theta, exti, t) + thrust(t)) / total_mass(t) + np.cos(theta)*GRAVITY
 
 
 # FDS bs
@@ -173,6 +174,12 @@ def lookup_table(angles, heights, verbose=True):
                     mid_v=(va+vb)/2
                     # print(mid_v,va,vb)
                     u0=np.array([heights[hi],mach2v([mid_v])[0],angles[ai]])
+                    # TODO fix. Consider apogee_mid > apogee_a > apogee_b
+                    """I am not convinced this algorithm works for finding the min. 
+                    If f(x) = |x + 0.99|x|| and a = -10 and b = 2 then f(-10) = 0.1 and 
+                    f(1) = 3.98 so b becomes (a + b) / 2 = -4 and since min f(x) is 
+                    when x = 0 this finds the wrong result"""
+
                     apogee_mid=eval(apogee(exti,u0,200,t0=4),heights[hi])
                     if apogee_a>apogee_b:
                         # print('a has more error')
