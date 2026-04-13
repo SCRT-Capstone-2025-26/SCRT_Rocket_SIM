@@ -24,7 +24,7 @@ drag_p_airden = [drag_p_airden_fn(ext) for ext in Exts]
 
 
 def drag(h, v, theta, exti, t):
-    if t < 4 or theta * 180 / pi > 20:
+    if t < 4 or theta * 180 / pi > 25:
         exti = 0
     # TODO make cleaner, perhaps a class
     next_dragdata = air_density(h) * drag_p_airden[exti](v2mach(v))
@@ -89,14 +89,14 @@ def runsweep(headless=False, exti=[3], u0=[np.array([0, 0, 1 / 15])], t0=[4]):
 
     if not headless:
         # plotting
-        fig, (ax1_h, ax2_v, ax3_angle) = plt.subplots(1,3)
+        fig, (ax1_h, ax2_v, ax3_angle,axti) = plt.subplots(1,4)
         for i in range(len(exti)):
-            ax1_h.plot(time[i], u[i][:, 0], label=f"ext={Exts[exti[i]]}, angle={u0[i][2]:.2f}")
-            ax1_h.plot(time[i], np.full(len(time[i]), GOAL_HEIGHT_METERS), label="Goal height")
+            ax1_h.plot(time[i], u[i][:, 0], label=f"ext={Exts[exti[i]]}, angle={u0[i][2]*180/pi:.2f}")
 
-            ax2_v.plot(time[i], u[i][:, 1], label=f"ext={Exts[exti[i]]} angle={u0[i][2]:.2f}")
-
+            ax2_v.plot(time[i], u[i][:, 1], label=f"ext={Exts[exti[i]]} angle={u0[i][2]*180/pi:.2f}")
             ax3_angle.plot(time[i], u[i][:, 2] * 180/pi, label=f"ext={Exts[exti[i]]} angle={u0[i][2]*180/pi:.2f}")
+            axti.plot(time[i], np.array([0 if (time[i][t] < 4 or u[i][t,2] * 180 / pi > 20) else Exts[exti[i]] for t in range(len(time[i]))]), label=f"ext={Exts[exti[i]]} angle={u0[i][2]*180/pi:.2f}")
+        ax1_h.plot(time[i], np.full(len(time[i]), GOAL_HEIGHT_METERS), label="Goal height")
         ax1_h.legend()
         ax1_h.set_xlabel("time (s)")
         ax1_h.set_ylabel("Height(m)")
@@ -109,6 +109,10 @@ def runsweep(headless=False, exti=[3], u0=[np.array([0, 0, 1 / 15])], t0=[4]):
         ax3_angle.set_xlabel("time (s)")
         ax3_angle.set_ylabel("degrees")
         ax3_angle.set_title("Flight Angle Graph")
+        axti.legend()
+        axti.set_xlabel("time (s)")
+        axti.set_ylabel("mm")
+        axti.set_title( "Extension")
         plt.get_current_fig_manager().full_screen_toggle()
         fig.show()
 
@@ -198,11 +202,9 @@ def lookup_table(angles, heights, verbose=True):
 
 
 if __name__ == "__main__":
-        runsweep(exti=[3,3,3], 
-                 u0=[np.array([0, 0, 15 * pi / 180]),
-                     np.array([0, 0, 10 * pi / 180 ]),
-                     np.array([0, 0, 5 * pi / 180])],
-                 t0=[0,0,0])
+        runsweep(exti=[3 for i in range(15)], 
+                 u0=[np.array([0, 0, i * pi / 180]) for i in range(15)],
+                                      t0=[0 for i in range(15)])
         plt.show()
         runsweep(exti=[0,3], u0=[np.array([0, 0, 0]),np.array([0, 0, 0])], t0=[0,0])
         plt.show()
