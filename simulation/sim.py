@@ -38,19 +38,20 @@ def drag(h, v, theta, exti, t):
 def accel(t, u, exti):
     h, v, theta = u
     # TODO np.cos(theta)*GRAVITY is a good approximation needs to be fixed
-    return (-drag(h, v, theta, exti, t) + thrust(t)) / total_mass(t) + np.cos(theta)*GRAVITY
+    return (-drag(h, v, theta, exti, t) + thrust(t)) / total_mass(t) + GRAVITY*cos(theta)
 
 
 # FDS bs
 # the derivative of the state space
 # forcing function f for finite difference scheme accountign for extention
 def f_w_ext(t, u, exti): 
+    backward_euler_dt = 0.005
     acceleration = accel(t, u, exti)
     return np.array(
         [
             u[1] * cos(u[2]),  # Change in Height
             acceleration,  # Change in Velocity
-            -GRAVITY * sin(u[2]) / (u[1] + acceleration),  # Change in Zenith
+            -GRAVITY * sin(u[2]) / (u[1] + acceleration*backward_euler_dt),  # Change in Zenith
         ]
     )
 
@@ -95,7 +96,7 @@ def runsweep(headless=False, exti=[3], u0=[np.array([0, 0, 1 / 15])], t0=[4]):
 
             ax2_v.plot(time[i], u[i][:, 1], label=f"ext={Exts[exti[i]]} angle={u0[i][2]:.2f}")
 
-            ax3_angle.plot(time[i], u[i][:, 2], label=f"ext={Exts[exti[i]]} angle={u0[i][2]:.2f}")
+            ax3_angle.plot(time[i], u[i][:, 2] * 180/pi, label=f"ext={Exts[exti[i]]} angle={u0[i][2]*180/pi:.2f}")
         ax1_h.legend()
         ax1_h.set_xlabel("time (s)")
         ax1_h.set_ylabel("Height(m)")
@@ -106,7 +107,7 @@ def runsweep(headless=False, exti=[3], u0=[np.array([0, 0, 1 / 15])], t0=[4]):
         ax2_v.set_title("Flight Velocity Graph")
         ax3_angle.legend()
         ax3_angle.set_xlabel("time (s)")
-        ax3_angle.set_ylabel("radians")
+        ax3_angle.set_ylabel("degrees")
         ax3_angle.set_title("Flight Angle Graph")
         plt.get_current_fig_manager().full_screen_toggle()
         fig.show()
@@ -197,7 +198,11 @@ def lookup_table(angles, heights, verbose=True):
 
 
 if __name__ == "__main__":
-        runsweep(exti=[3,3], u0=[np.array([0, 0, 20 * pi / 180]),np.array([0, 0, 0])], t0=[0,0])
+        runsweep(exti=[3,3,3], 
+                 u0=[np.array([0, 0, 15 * pi / 180]),
+                     np.array([0, 0, 10 * pi / 180 ]),
+                     np.array([0, 0, 5 * pi / 180])],
+                 t0=[0,0,0])
         plt.show()
         runsweep(exti=[0,3], u0=[np.array([0, 0, 0]),np.array([0, 0, 0])], t0=[0,0])
         plt.show()

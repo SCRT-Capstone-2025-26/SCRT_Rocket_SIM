@@ -1,3 +1,4 @@
+from numpy import pi
 import numpy as np
 import scipy
 import matplotlib.pyplot as plt
@@ -11,10 +12,10 @@ import matplotlib.pyplot as plt
 
 def scipyintegrate(u0, scheme, f, max_t, dt, t0=0):
     # print(u0,'u0')
-    u = [u0]
-    t = [t0]
+    u = [u0,u0]
+    t = [t0,t0]
     solution = scheme(f, t0, u0, max_t, max_step=dt)
-    while u[-1][1] >= -10 and t[-1] < max_t:  #
+    while (u[-1][0]-u[-2][0])/dt >= -10  and t[-1]< max_t:  #
         solution.step()
         t += [solution.t]
         u += [solution.y]
