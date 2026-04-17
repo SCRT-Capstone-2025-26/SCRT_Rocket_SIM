@@ -9,6 +9,8 @@ from data_utilities.interpolation import drag_p_airden_fn
 from data_utilities.equations_n_constants import air_density, thrust, total_mass, mach2v, v2mach, GRAVITY, GOAL_HEIGHT_METERS
 import scipy
 
+import os
+
 ##################CD is actually just drag rn
 
 # TODO make class or something to get rid of usign a global object
@@ -211,3 +213,9 @@ if __name__ == "__main__":
         print("Lookup:")
         print(np.array(lookup))
         np.save('lookup.npy',lookup)
+
+        os.mkdir("tables")
+        np.save("tables/angles.npy", angles)
+        np.save("tables/heights.npy", heights)
+        np.save("tables/exts.npy", sim.get_exts())
+        np.save("tables/lookup.npy", lookup)
