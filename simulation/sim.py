@@ -217,5 +217,5 @@ if __name__ == "__main__":
         os.mkdir("tables")
         np.save("tables/angles.npy", angles)
         np.save("tables/heights.npy", heights)
-        np.save("tables/exts.npy", sim.get_exts())
+        np.save("tables/exts.npy", Exts)
         np.save("tables/lookup.npy", lookup)
