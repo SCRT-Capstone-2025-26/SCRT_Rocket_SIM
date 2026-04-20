@@ -162,9 +162,9 @@ def run(headless=False, exti=3, u0=np.array([0, 0, 1 / 15]), t0=4):
         fig.show()
 
 
-def eval(maxheight,currheight):
-    return abs(maxheight-GOAL_HEIGHT_METERS)
-
+def eval(v,hi,ai,exti):
+    u0=np.array([heights[hi],mach2v([vb])[0],angles[ai]])
+    return apogee(exti,u0,200,t0=4)-GOAL_HEIGHT_METERS
 
 def lookup_table(angles, heights, verbose=True):
     lookup=[[[] for ai in angles] for hi in heights]
@@ -174,29 +174,21 @@ def lookup_table(angles, heights, verbose=True):
             for exti in range(len(Exts)):
                 va=0
                 vb=1.1
-                u0=np.array([heights[hi],mach2v([va])[0],angles[ai]])
-                apogee_a=abs(apogee(exti,u0,200,t0=4)-GOAL_HEIGHT_METERS)
-                u0=np.array([heights[hi],mach2v([vb])[0],angles[ai]])
-                apogee_b=abs(apogee(exti,u0,200,t0=4)-GOAL_HEIGHT_METERS)
+                apogee_a=eval(va,hi,ai,exti)
+                apogee_b=eval(vb,hi,ai,exti)
+                # If we are always overshooting then our best velocity is 0
+                if (apogee_a)>0:
+                    return 0
+                # If we are always undershooting then our best velocity is maximum
+                if (apogee_b)<0:
+                    return 2
                 while(vb-va>Tol):
                     mid_v=(va+vb)/2
-                    # print(mid_v,va,vb)
-                    u0=np.array([heights[hi],mach2v([mid_v])[0],angles[ai]])
-                    # TODO fix. Consider apogee_mid > apogee_a > apogee_b
-                    """I am not convinced this algorithm works for finding the min. 
-                    If f(x) = |x + 0.99|x|| and a = -10 and b = 2 then f(-10) = 0.1 and 
-                    f(1) = 3.98 so b becomes (a + b) / 2 = -4 and since min f(x) is 
-                    when x = 0 this finds the wrong result"""
-
-                    apogee_mid=eval(apogee(exti,u0,200,t0=4),heights[hi])
-                    if apogee_a>apogee_b:
-                        # print('a has more error')
+                    apogee_mid=eval(mid_v,hi,ai,exti)
+                    if apogee_mid>0:
                         va=mid_v
-                        apogee_a=apogee_mid
                     else:
-                        # print('b has more error')
                         vb=mid_v
-                        apogee_b=apogee_mid
                 optimal_vel_list+=[mid_v]
             if verbose:
                 print(f"Height:{heights[hi]} Angle:{angles[ai]:.3f} vel diff:{100*(max(optimal_vel_list)-min(optimal_vel_list))/min(optimal_vel_list):.3f}%")
