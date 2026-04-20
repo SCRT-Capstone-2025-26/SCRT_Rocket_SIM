@@ -162,9 +162,29 @@ def run(headless=False, exti=3, u0=np.array([0, 0, 1 / 15]), t0=4):
         fig.show()
 
 
-def eval(v,hi,ai,exti):
-    u0=np.array([heights[hi],mach2v([vb])[0],angles[ai]])
+def eval(v,h,a,exti):
+    u0=np.array([h,mach2v(v),a])
     return apogee(exti,u0,200,t0=4)-GOAL_HEIGHT_METERS
+
+def binary_search(h,a,exti):
+    va=0
+    vb=1.1
+    # If we are always overshooting then our best velocity is 0
+    if (eval(va,h,a,exti))>0:
+        return 0
+    # If we are always undershooting then our best velocity is maximum
+    if (eval(vb,h,a,exti))<0:
+        return 1.2
+    while(vb-va>Tol):
+        mid_v=(va+vb)/2
+        apogee_mid=eval(mid_v,h,a,exti)
+        # print(exti,apogee_mid)
+        if apogee_mid<0:
+            va=mid_v
+        else:
+            vb=mid_v
+    return mid_v
+
 
 def lookup_table(angles, heights, verbose=True):
     lookup=[[[] for ai in angles] for hi in heights]
@@ -172,40 +192,28 @@ def lookup_table(angles, heights, verbose=True):
         for ai in range(len(angles)):
             optimal_vel_list=[]#optimal velocity given a specfic height to switch beavs extension
             for exti in range(len(Exts)):
-                va=0
-                vb=1.1
-                apogee_a=eval(va,hi,ai,exti)
-                apogee_b=eval(vb,hi,ai,exti)
-                # If we are always overshooting then our best velocity is 0
-                if (apogee_a)>0:
-                    return 0
-                # If we are always undershooting then our best velocity is maximum
-                if (apogee_b)<0:
-                    return 2
-                while(vb-va>Tol):
-                    mid_v=(va+vb)/2
-                    apogee_mid=eval(mid_v,hi,ai,exti)
-                    if apogee_mid>0:
-                        va=mid_v
-                    else:
-                        vb=mid_v
-                optimal_vel_list+=[mid_v]
+                h=heights[hi]
+                a=angles[ai]
+                optimal_vel_list+=[binary_search(h, a, exti)]
             if verbose:
                 print(f"Height:{heights[hi]} Angle:{angles[ai]:.3f} vel diff:{100*(max(optimal_vel_list)-min(optimal_vel_list))/min(optimal_vel_list):.3f}%")
+                # print([float(eval(v, h, a, exti)) for v,exti in zip(optimal_vel_list,[0,1,2,3])])
+                # print(optimal_vel_list)
+                # print()
             lookup[hi][ai] += optimal_vel_list
     return lookup
 
 
 if __name__ == "__main__":
-        runsweep(exti=[3 for i in range(15)], 
-                 u0=[np.array([0, 0, i * pi / 180]) for i in range(15)],
-                                      t0=[0 for i in range(15)])
-        plt.show()
-        runsweep(exti=[0,3], u0=[np.array([0, 0, 0]),np.array([0, 0, 0])], t0=[0,0])
-        plt.show()
+        # runsweep(exti=[3 for i in range(15)], 
+        #          u0=[np.array([0, 0, i * pi / 180]) for i in range(15)],
+        #                               t0=[0 for i in range(15)])
+        # plt.show()
+        # runsweep(exti=[0,3], u0=[np.array([0, 0, 0]),np.array([0, 0, 0])], t0=[0,0])
+        # plt.show()
         heights=[200*i+800 for i in range(11)]
         angles=[pi/180*i**2 for i in range(4)]
-        Tol=0.001 
+        Tol=0.00001 
         print("Angles:",angles)
         print("Heights:",heights)
         print("Exts:",Exts)
