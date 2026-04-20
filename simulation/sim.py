@@ -24,6 +24,7 @@ drag_p_airden = [drag_p_airden_fn(ext) for ext in Exts]
 
 
 def drag(h, v, theta, exti, t):
+
     if t < 4 or theta * 180 / pi > 25:
         exti = 0
     # TODO make cleaner, perhaps a class
@@ -45,12 +46,14 @@ def accel(t, u, exti):
 # the derivative of the state space
 # forcing function f for finite difference scheme accountign for extention
 def f_w_ext(t, u, exti): 
+    # this is a numerical trick to make sure that the code doesn't break at t=0
     backward_euler_dt = 0.005
     acceleration = accel(t, u, exti)
     return np.array(
         [
             u[1] * cos(u[2]),  # Change in Height
             acceleration,  # Change in Velocity
+            # acceleration term is to avoid divides by zero
             -GRAVITY * sin(u[2]) / (u[1] + acceleration*backward_euler_dt),  # Change in Zenith
         ]
     )
