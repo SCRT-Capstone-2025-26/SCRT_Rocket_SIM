@@ -15,7 +15,8 @@ def scipyintegrate(u0, scheme, f, max_t, dt, t0=0):
     u = [u0,u0]
     t = [t0,t0]
     solution = scheme(f, t0, u0, max_t, max_step=dt)
-# while the change in height is not largely negative
+# while the change in height is not largely negative 
+# (so we simulate the rise and the start of the fall of our flight path)
     while (u[-1][0]-u[-2][0])/dt >= -10  and t[-1]< max_t:  #
         solution.step()
         t += [solution.t]
