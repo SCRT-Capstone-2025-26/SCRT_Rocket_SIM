@@ -39,8 +39,8 @@ class Sim():
     # TODO add derivation documentation
     def accel(self, t, u, exti):
         h, v, theta = u
-        # TODO np.cos(theta)*GRAVITY is a good approximation needs to be fixed
-        return (-self.drag(h, v, theta, exti, t) + thrust(t)) / total_mass(t) + np.cos(theta)*GRAVITY
+        # TODO np.cos(theta)*GRAVITY is correct, whiteboarded work needs to be documented.
+        return ((-self.drag(h, v, theta, exti, t) + thrust(t)) / total_mass(t)) + np.cos(theta)*GRAVITY
     
     
     # FDS bs
@@ -76,7 +76,6 @@ class Sim():
 
 
     def apogee(self, exti, u0, t, t0, dt=0.05):
-
         f, time = self.run_scipy(dt=dt, exti=exti, t=t, t0=t0, u0=u0)
         return np.max(f[:, 0])
 
