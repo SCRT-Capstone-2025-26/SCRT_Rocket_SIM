@@ -24,8 +24,13 @@ drag_p_airden = [drag_p_airden_fn(ext) for ext in Exts]
 
 
 def drag(h, v, theta, exti, t):
+<<<<<<< Updated upstream
 
     if t < 4 or theta * 180 / pi > 25:
+=======
+    # If the angle is too big we have to retract the blades
+    if t < 4 or theta * 180 / pi > 20:
+>>>>>>> Stashed changes
         exti = 0
     # TODO make cleaner, perhaps a class
     next_dragdata = air_density(h) * drag_p_airden[exti](v2mach(v))
