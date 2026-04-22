@@ -9,6 +9,8 @@ from data_utilities.interpolation import drag_p_airden_fn
 from data_utilities.equations_n_constants import air_density, thrust, total_mass, mach2v, v2mach, GRAVITY, GOAL_HEIGHT_METERS
 import scipy
 
+import os
+
 ##################CD is actually just drag rn
 
 # TODO make class or something to get rid of usign a global object
@@ -158,7 +160,7 @@ def eval(maxheight,currheight):
     return abs(maxheight-GOAL_HEIGHT_METERS)
 
 
-def lookup_table(angles, heights, verbose=True):
+def lookup_table(angles, heights, save=False, verbose=True):
     lookup=[[[] for ai in angles] for hi in heights]
     for hi in range(len(heights)):
         for ai in range(len(angles)):
@@ -193,6 +195,20 @@ def lookup_table(angles, heights, verbose=True):
             if verbose:
                 print(f"Height:{heights[hi]} Angle:{angles[ai]:.3f} vel diff:{100*(max(optimal_vel_list)-min(optimal_vel_list))/min(optimal_vel_list):.3f}%")
             lookup[hi][ai] += optimal_vel_list
+    if save:
+        base_path = os.path.join(os.path.abspath(__file__), "..", "tables")
+
+        if os.path.isfile(base_path):
+            # Prints a stylized error message.
+            raise FileExistsError("\n__________________________________________________\n__________________¶¶¶¶¶¶¶¶¶¶¶¶¶¶__________________\n______________¶¶¶¶_____________¶¶¶¶¶______________\n___________¶¶¶_____________________¶¶¶¶___________\n________¶¶¶¶__________________________¶¶¶_________\n_______¶¶_______________________________¶¶¶_______\n______¶¶__________________________________¶¶______\n____¶¶_____________________________________¶¶_____\n____¶________________________________________¶____\n___¶¶________________________________________¶¶___\n__¶¶_____________¶¶¶__________________________¶___\n___¶___________¶¶_____________________________¶¶__\n___¶___________¶________________¶¶¶___________¶¶__\n___¶_____¶¶_¶¶_¶¶¶¶¶_¶____________¶¶¶__________¶__\n___¶_________¶___¶¶¶¶¶¶¶¶¶¶¶¶______¶¶¶_________¶__\n___¶¶______¶¶¶¶___¶¶¶¶¶¶¶¶¶¶¶¶¶¶____¶¶¶_¶¶____¶¶¶_\n___¶¶____¶¶¶¶¶¶___¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶__¶¶¶¶¶¶¶¶__¶¶__\n___¶____¶¶¶¶¶¶¶____¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶__¶¶¶¶¶¶¶¶¶¶¶___\n__¶¶___¶¶¶¶¶¶¶¶____¶¶¶¶¶¶¶¶¶¶¶¶¶¶__¶¶¶¶¶¶¶¶¶¶¶¶___\n____¶¶¶¶¶¶¶¶¶¶______¶¶¶¶¶¶¶¶¶¶¶¶¶__¶¶¶¶¶¶¶¶¶¶¶____\n______¶¶¶¶¶¶¶___¶¶_____¶¶¶¶¶¶¶¶¶____¶¶¶¶¶¶¶¶¶¶____\n______¶__¶¶¶____¶¶¶___________________¶¶¶¶¶¶¶_____\n_____¶¶________¶¶¶¶¶¶__¶________________¶¶¶_______\n_____¶¶______¶¶¶____¶¶¶¶______________¶¶¶¶________\n______¶¶______¶_______¶¶_________¶¶¶¶¶¶¶¶¶________\n_______¶¶¶¶¶_______________¶_¶¶¶¶¶¶¶¶¶¶¶¶¶________\n___________¶¶¶____¶¶¶¶_¶¶_¶¶¶___¶¶¶¶¶___¶¶________\n____________¶¶¶¶¶_¶__¶¶_¶_¶_¶____¶¶_____¶_________\n_____________¶_____________¶¶_____¶_____¶_________\n______________¶¶¶¶¶_¶¶¶¶¶¶________¶¶____¶_________\n____________________¶¶¶¶¶¶_________¶____¶_________\n_____________________¶¶_¶¶_________¶¶___¶¶________\n______________________¶¶¶¶¶_________¶____¶________\n___Why_is_tables_a_____¶¶¶¶¶_______¶¶____¶¶_______\n___file_it_should_be___¶¶¶¶¶______¶_¶_____¶_______\n___a_directory_to______¶_¶¶¶_____¶__¶¶____¶_______\n___hold_all_the________¶¶¶¶¶____¶¶__¶¶___¶________\n___tables!!____________¶¶¶¶¶__¶¶¶__¶¶___¶_________\n________________________¶¶¶¶¶¶¶__¶¶¶___¶¶_________\n_________________________¶¶_____¶¶¶____¶__________\n____________________________¶¶¶¶______¶___________\n______________________________¶¶_____¶¶___________\n_______________________________¶¶¶¶¶¶¶____________\n__________________________________________________")
+        if not os.path.exists("tables"):
+            os.mkdir("tables")
+
+        np.save(os.path.join(base_path, "angles.npy"), angles)
+        np.save(os.path.join(base_path, "heights.npy"), heights)
+        np.save(os.path.join(base_path, "exts.npy"), Exts)
+        np.save(os.path.join(base_path, "lookup.npy"), lookup)
+
     return lookup
 
 
@@ -207,7 +223,7 @@ if __name__ == "__main__":
         print("Angles:",angles)
         print("Heights:",heights)
         print("Exts:",Exts)
-        lookup=lookup_table(angles, heights)
+        lookup=lookup_table(angles, heights, save=False)
         print("Lookup:")
         print(np.array(lookup))
-        np.save('lookup.npy',lookup)
+        
