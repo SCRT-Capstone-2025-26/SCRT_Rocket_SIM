@@ -9,19 +9,26 @@ _base_path = os.path.join(os.path.dirname(__file__))
 
 GOAL_HEIGHT_METERS = 3048
 
-# TODO get local gravity of launch site
-# Currently set as ISO standard 80000 
-GRAVITY = -9.80665
+
+# ISO standard 80000 
+# GRAVITY = -9.80665
+
+# Local gravity predicted at OROC Brothers Oregon
+GRAVITY = -9.80085
+
+# Local gravity predicted at IREC Launch site, Reeves County Texas
+# GRAVITY = -9.79131
 
 BODY_MASS = 34.0194
 
-# TODO add more decimal points
-MACH_TO_METERS_SEC =343.0
+# Should be highest useful precision
+MACH_TO_METERS_SEC = 340.29
 
 METERS_TO_FEET = 3.28084
 
 FEET_TO_METERS = 0.3048
 
+# Current motor burnout at 4.455 seconds
 STD_THRUST_CSV = os.path.join(_base_path, "..", "data", "motor_data", "N3300R", "N3300R_thrust.csv")
 
 # returns the estimated amount of force at a specific point in time
@@ -54,6 +61,7 @@ STD_DRAG_CSV_LIST = [
 
 # _drag_data_path = os.path.join(_base_path, "..", "data", "drag_data")
 # STD_DRAG_CSV_LIST = [
+#         os.path.join(_drag_data_path, "Bababooey_Fulldata.csv"),
 #         os.path.join(_drag_data_path, "DataCollSweep1_Fulldata_042026.csv"),
 #         # os.path.join(_drag_data_path, "FullScale_NoCameraTransonicSweep2_041726.csv"),
 #         os.path.join(_drag_data_path, "FullScaleV9_NoCameraTransonicSweep1_041626.csv"),
