@@ -2,13 +2,12 @@ import matplotlib.pyplot as plt
 
 from numpy import sin, cos, pi
 import numpy as np
+import scipy
+import os
+
 from integration import scipyintegrate
-# from data_utilities.dataimport_utilities import np_thrust_data,read_drag_data_np
 from interpolation import drag_p_airden_fn
 from equations_n_constants import air_density, thrust, total_mass, mach2v, v2mach, GRAVITY, GOAL_HEIGHT_METERS
-import scipy
-
-import os
 
 ##################CD is actually just drag rn
 
@@ -202,7 +201,7 @@ class Sim():
                     # print()
                 lookup[hi][ai] += optimal_vel_list
         if save:
-            base_path = os.path.join(os.path.abspath(__file__), "..", "tables")
+            base_path = os.path.join(os.path.dirname(__file__), "..", "tables")
 
             if os.path.isfile(base_path):
                 # Prints a stylized error message.

@@ -1,29 +1,16 @@
 # TODO add some common sense tests to verify this function
 from scipy.interpolate import make_interp_spline
 from scipy.ndimage import convolve
-from ..data_utilities.dataimport_utilities import np_thrust_data, read_drag_data_np
-from .equations_n_constants import air_density, meters2feet
-from ..data_utilities.eng_to_csv import eng_to_csv
-import os
+from utilities import np_thrust_data, read_drag_data_np
+from equations_n_constants import air_density, meters2feet, STD_THRUST_CSV
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 
 # returns the estimated amount of force at a specific point in time
-def thrust_init():
-    # TODO: make this file a non test file.
-    directory_name = "../data/runs/20251114_191130/input/"
-    try:
-        os.mkdir(directory_name)
-    except FileExistsError:
-        pass
-    src_filepath = "../sample_datasets/AeroTech_N2000W.eng"
-    dst_filepath = "../data/runs/20251114_191130/input/thrust_motor.csv"
-    spec_filepath = "../data/runs/20251114_191130/input/motor_spec.csv"
-    eng_to_csv(src_filepath, dst_filepath, spec_filepath)
-
-    thrust_data = np_thrust_data("../data/runs/20251114_191130/input/thrust_motor.csv")
+def thrust_init(thrust_filepath=STD_THRUST_CSV):
+    thrust_data = np_thrust_data(thrust_filepath)
     timesteps = thrust_data[:, 0]
     thrust = thrust_data[:, 1]
     return make_interp_spline(timesteps, thrust, k=5)

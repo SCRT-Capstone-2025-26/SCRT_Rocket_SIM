@@ -1,5 +1,5 @@
 from utilities import iterate
-from simulation.butcher_table import butcher_table_2
+from butcher_table import butcher_table_2
 
 
 def heun(f, t, dt, u):  # forward euler FDS
