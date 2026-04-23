@@ -8,6 +8,7 @@ import os
 from integration import scipyintegrate
 from interpolation import drag_p_airden_fn
 from equations_n_constants import air_density, thrust, total_mass, mach2v, v2mach, gravity_at_alt, GOAL_HEIGHT_METERS, EXTS
+from equations_n_constants import THRUST_BURNOUT
 
 ##################CD is actually just drag rn
 
@@ -26,7 +27,7 @@ class Sim():
 
     def drag(self, h, v, theta, exti, t):
         # If the angle is too big we have to retract the blades
-        if t < 4 or theta * 180 / pi > 20:
+        if t < THRUST_BURNOUT or theta * 180 / pi > 20:
             exti = 0
         next_dragdata = air_density(h) * self.drag_p_airden[exti](v2mach(v))
         self.dragdata += [next_dragdata]
@@ -79,7 +80,7 @@ class Sim():
         return np.max(f[:, 0])
 
 
-    def runsweep(self, headless=False, exti=[3], u0=[np.array([0, 0, 1 / 15])], t0=[4]):
+    def runsweep(self, headless=False, exti=[3], u0=[np.array([0, 0, 1 / 15])], t0=[THRUST_BURNOUT]):
         # initial conditions
         t=200
         dt = 0.05
@@ -98,7 +99,7 @@ class Sim():
 
                 ax2_v.plot(time[i], u[i][:, 1], label=f"ext={self.exts[exti[i]]} angle={u0[i][2]*180/pi:.2f}")
                 ax3_angle.plot(time[i], u[i][:, 2] * 180/pi, label=f"ext={self.exts[exti[i]]} angle={u0[i][2]*180/pi:.2f}")
-                axti.plot(time[i], np.array([0 if (time[i][t] < 4 or u[i][t,2] * 180 / pi > 20) else self.exts[exti[i]] for t in range(len(time[i]))]), label=f"ext={self.exts[exti[i]]} angle={u0[i][2]*180/pi:.2f}")
+                axti.plot(time[i], np.array([0 if (time[i][t] < THRUST_BURNOUT or u[i][t,2] * 180 / pi > 20) else self.exts[exti[i]] for t in range(len(time[i]))]), label=f"ext={self.exts[exti[i]]} angle={u0[i][2]*180/pi:.2f}")
             ax1_h.plot(time[i], np.full(len(time[i]), GOAL_HEIGHT_METERS), label="Goal height")
             ax1_h.legend()
             ax1_h.set_xlabel("time (s)")
@@ -120,7 +121,7 @@ class Sim():
             fig.show()
 
 
-    def run(self, headless=False, exti=3, u0=np.array([0, 0, 1 / 15]), t0=4):
+    def run(self, headless=False, exti=3, u0=np.array([0, 0, 1 / 15]), t0=THRUST_BURNOUT):
         # initial conditions
         # T=200
         dt = 0.05
@@ -164,7 +165,7 @@ class Sim():
 
     def eval(self, v,h,a,exti):
         u0=np.array([h,mach2v(v),a])
-        return self.apogee(exti,u0,200,t0=4)-GOAL_HEIGHT_METERS
+        return self.apogee(exti,u0,200,t0=THRUST_BURNOUT)-GOAL_HEIGHT_METERS
 
     def binary_search(self, h,a,exti):
         va=0
