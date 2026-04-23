@@ -25,6 +25,22 @@ def find_drag_from_exti(drag_data, fixed_ext, exti=0, err=0.0001):
                 good_data[j] += [drag_data[j][i]]
     return good_data
 
+#this takes in np arrays with multiple entries and concatenates them
+def pointwise_concatenate_np(dragdata1,dragdata2):
+    return np.array([np.array(list(dragdata1[i])+list(dragdata2[i])) for i in range(len(dragdata1))])
+
+
+#removes duplicates from the first collumn of the data
+def remove_repeats(sorted_drag_data):
+    data=sorted_drag_data
+    i=0
+    print(len(data[0,:]))
+    while i < len(data[0,:])-1:
+        if data[0,i]==data[0,i+1]:
+            data=pointwise_concatenate_np(data[:,:i+1], data[:,i+2:])
+            print(data[0,i],data[0,i+1])
+        i+=1
+    return data
 
 
 
@@ -39,7 +55,7 @@ def drag_p_airden_fn(fixed_ext):
     )
     sort_indices = np.argsort(drag_data[0, :])
     drag_data = drag_data[:, sort_indices]
-
+    drag_data=remove_repeats(drag_data)
 
     machsteps = drag_data[0, :]
     drag = drag_data[1, :] / air_density(meters2feet(drag_data[2, :]))
