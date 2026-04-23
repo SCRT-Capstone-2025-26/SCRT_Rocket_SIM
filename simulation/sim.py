@@ -232,4 +232,3 @@ if __name__ == "__main__":
         lookup=sim.lookup_table(angles, heights, save=False)
         print("Lookup:")
         print(np.array(lookup))
-        

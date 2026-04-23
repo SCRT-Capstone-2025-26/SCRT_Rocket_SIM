@@ -13,7 +13,7 @@ GOAL_HEIGHT_METERS = 3048
 # Currently set as ISO standard 80000 
 GRAVITY = -9.80665
 
-BODY_MASS = 15
+BODY_MASS = 34.0194
 
 # TODO add more decimal points
 MACH_TO_METERS_SEC =343.0
@@ -42,11 +42,15 @@ thrust_fn = _thrust_init(STD_THRUST_CSV)
 EXTS = [0, 5, 15, 30]
 
 STD_DRAG_CSV_LIST = [
-        "sample_datasets/SupSonicSweep2_012826_data.csv",
-        "sample_datasets/SupSonicSweep4_013026_FullData.csv",
-        "sample_datasets/SupSonicSweep5_013126_FullData.csv",
-        "sample_datasets/SupSonicSweep2_BEAVS_012926_FullData.csv",
+        "data/drag_data/Bababooey_Fulldata.csv",
+        "data/drag_data/DataCollSweep1_Fulldata_042026.csv"
     ]
+# Bababooey_Fulldata.csv
+# DataCollSweep1_Fulldata_042026.csv
+# FullScale_NoCameraTransonicSweep2_041726.csv
+# FullScaleV9_NoCameraTransonicSweep1_041626.csv
+# FullScaleV9_NoCameraTransonicSweep1_041826.csv
+# FullScaleV9_NoCameraTransonicSweep1_042026.csv
 
 # _drag_data_path = os.path.join(_base_path, "..", "data", "drag_data")
 # STD_DRAG_CSV_LIST = [

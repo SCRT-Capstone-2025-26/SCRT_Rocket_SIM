@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import numpy as np
 from equations_n_constants import STD_DRAG_COL_NAMES
 
 # Plots a 2d data in a 3D graph
@@ -24,12 +25,24 @@ def plot2d_surf(vars, var_names=STD_DRAG_COL_NAMES):
     # 5. Display the plot
     plt.show()
 
+def pointwise_concatenate(dragdata1,dragdata2):
+    return [np.array(list(dragdata1[i])+list(dragdata2[i])) for i in range(len(dragdata1))]
+
+def add_drag(dragdata,k):
+    return [dragdata[0],dragdata[1],dragdata[2]+k]
 
 if __name__ == "__main__":
     from utilities import read_drag_data_np
-
-    plot2d_surf(read_drag_data_np())
-    plot2d_surf(read_drag_data_np(col_names=["Extension", "Mach", "Drag of all"]))
+    low_mach=read_drag_data_np(
+        col_names=["Extension", "Mach", "Drag of all"],
+        csv_files=["data/drag_data/DataCollSweep1_Fulldata_042026.csv"])
+    high_mach=read_drag_data_np(
+        col_names=["Extension", "Mach", "Drag of all"],
+        csv_files=["data/drag_data/Bababooey_Fulldata.csv"])
+    high_mach=add_drag(high_mach, 30)
+    plot2d_surf(pointwise_concatenate(low_mach, high_mach))
+    # plot2d_surf(read_drag_data_np())
+    # plot2d_surf(read_drag_data_np(col_names=["Extension", "Mach", "Drag of all"]))
 
     
     # ext,mach,cd=read_drag_data_np()
