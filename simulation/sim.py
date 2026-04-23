@@ -7,7 +7,7 @@ import os
 
 from integration import scipyintegrate
 from interpolation import drag_p_airden_fn
-from equations_n_constants import air_density, thrust, total_mass, mach2v, v2mach, GRAVITY, GOAL_HEIGHT_METERS, EXTS
+from equations_n_constants import air_density, thrust, total_mass, mach2v, v2mach, gravity_at_alt, GOAL_HEIGHT_METERS, EXTS
 
 ##################CD is actually just drag rn
 
@@ -37,14 +37,15 @@ class Sim():
     # TODO add derivation documentation
     def accel(self, t, u, exti):
         h, v, theta = u
-        # TODO np.cos(theta)*GRAVITY is correct, whiteboarded work needs to be documented.
-        return ((-self.drag(h, v, theta, exti, t) + thrust(t)) / total_mass(t)) + np.cos(theta)*GRAVITY
+        # TODO np.cos(theta)*gravity_at_alt(h) is correct, whiteboarded work needs to be documented.
+        return ((-self.drag(h, v, theta, exti, t) + thrust(t)) / total_mass(t)) + np.cos(theta)*gravity_at_alt(h)
     
     
     # FDS bs
     # the derivative of the state space
     # forcing function f for finite difference scheme accountign for extention
     def f_w_ext(self, t, u, exti): 
+        h, _, _ = u
         # this is a numerical trick to make sure that the code doesn't break at t=0
         backward_euler_dt = 0.005
         acceleration = self.accel(t, u, exti)
@@ -53,7 +54,7 @@ class Sim():
                 u[1] * cos(u[2]),  # Change in Height
                 acceleration,  # Change in Velocity
                 # acceleration term is to avoid divides by zero
-                -GRAVITY * sin(u[2]) / (u[1] + acceleration*backward_euler_dt),  # Change in Zenith
+                -gravity_at_alt(h) * sin(u[2]) / (u[1] + acceleration*backward_euler_dt),  # Change in Zenith
             ]
         )
 

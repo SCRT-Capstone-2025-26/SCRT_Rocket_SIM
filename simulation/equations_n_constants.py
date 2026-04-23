@@ -9,15 +9,39 @@ _base_path = os.path.join(os.path.dirname(__file__))
 
 GOAL_HEIGHT_METERS = 3048
 
+# Choose gravity variables by launch location
 
-# ISO standard 80000 
+# ISO standard 80000 for gravity
 # GRAVITY = -9.80665
+# Mean radius of earth in km
+# LATITUDE = 0
+# radius_r = 6371.00877
 
 # Local gravity predicted at OROC Brothers Oregon
+# 43.800050, -120.650027. 1380.09 meters
+# Local gravity at OROC launch site
+LATITUDE = 43.800050
 GRAVITY = -9.80085
+# Radius of earth in km at OROC Launch site latitude at sea level
+radius_r = 6367.937
 
-# Local gravity predicted at IREC Launch site, Reeves County Texas
+# Local gravity predicted at IREC Launch Site, Reeves County Texas
+# 31.031080, -103.549876. 890.45 meters
+# LATITUDE = 31.031080
+# Local gravity at IREC launch site
 # GRAVITY = -9.79131
+# Radius of earth in km at IREC launch site
+# radius_r = 6372.489
+
+# Based on Somigliana equation
+def _local_gravity_at_lat(lat):
+    return -9.7803253359*((1+(0.001931851353*(np.sin(lat*(np.pi/180))**2)))/
+                         np.sqrt(1-(0.00669437999013*(np.sin(lat*(np.pi/180))**2))))
+
+# Calculates gravity given a specific height
+def gravity_at_alt(h):
+    
+    return _local_gravity_at_lat(LATITUDE) * ((radius_r/(radius_r+(h/1000)))**2)
 
 BODY_MASS = 34.0194
 
@@ -88,8 +112,9 @@ def v2mach(mach):
 
 def thrust(t):
     # return 3000 if t < 4 else 0
-    return thrust_fn(t)
+    return max(thrust_fn(t), 0)
     
+print(thrust(0.01))
 
 
 def motor_mass(t):
