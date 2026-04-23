@@ -1,4 +1,7 @@
 import os
+import csv
+import numpy as np
+from scipy.interpolate import make_interp_spline
 
 _base_path = os.path.join(os.path.dirname(__file__))
 
@@ -19,7 +22,22 @@ METERS_TO_FEET = 3.28084
 
 FEET_TO_METERS = 0.3048
 
-STD_THRUST_CSV = os.path.join(_base_path, "..", "data", "motor_data", "N3300R_thrust.csv")
+STD_THRUST_CSV = os.path.join(_base_path, "..", "data", "motor_data", "N3300R", "N3300R_thrust.csv")
+
+# returns the estimated amount of force at a specific point in time
+def _thrust_init(thrust_filepath=STD_THRUST_CSV):
+    thrust_data = []
+    with open(STD_THRUST_CSV, "r") as file:
+        for line in csv.reader(file):
+            thrust_data += [line]
+    thrust_data = np.array([[float(x) for x in y] for y in thrust_data[1:]])
+    timesteps = thrust_data[:, 0]
+    thrust = thrust_data[:, 1]
+    return make_interp_spline(timesteps, thrust, k=5)
+
+# thrust_fn = None # turned to _thrust_init(STD_THRUST_CSV) when thrust(t) called
+thrust_fn = _thrust_init(STD_THRUST_CSV)
+
 
 EXTS = [0, 5, 15, 30]
 
@@ -57,7 +75,9 @@ def v2mach(mach):
 
 
 def thrust(t):
-    return 3000 if t < 4 else 0
+    # return 3000 if t < 4 else 0
+    return thrust_fn(t)
+    
 
 
 def motor_mass(t):

@@ -1,12 +1,12 @@
 import matplotlib.pyplot as plt
-
+from equations_n_constants import STD_DRAG_COL_NAMES
 
 # Plots a 2d data in a 3D graph
 # Input:
 #     Vars: 2D list with 3 arrays in the first dimension for the 3 data axis
 #     VarNames: Names of the 3 axis for the graph axis labels.
 #         Default values of ['Extension','Mach','Drag Coeff']
-def plot2d_surf(vars, var_names=["Extension", "Mach", "Drag Coeff"]):
+def plot2d_surf(vars, var_names=STD_DRAG_COL_NAMES):
     xs = vars[0]
     ys = vars[1]
     zs = vars[2]
