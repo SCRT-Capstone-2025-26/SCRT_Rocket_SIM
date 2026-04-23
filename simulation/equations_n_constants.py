@@ -45,7 +45,8 @@ def gravity_at_alt(h):
         raise ValueError("Height beyond expected value. Height should be in meters.")
     return _local_gravity_at_lat(LATITUDE) * ((radius_r/(radius_r+(h/1000)))**2)
 
-BODY_MASS = 34.0194
+MOTOR_MASS = 12.05
+BODY_MASS = 34.0194-MOTOR_MASS
 
 # Should be highest useful precision
 MACH_TO_METERS_SEC = 340.29
@@ -125,8 +126,8 @@ def thrust(t):
 
 
 def motor_mass(t):
-    return 10
-
+    #TODO: add in actual decreasing motor mass
+    return 0
 
 def total_mass(t):
     return BODY_MASS + motor_mass(t)
