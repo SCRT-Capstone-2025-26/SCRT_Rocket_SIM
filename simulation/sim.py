@@ -48,7 +48,7 @@ class Sim():
     def f_w_ext(self, t, u, exti): 
         h, _, _ = u
         # this is a numerical trick to make sure that the code doesn't break at t=0
-        backward_euler_dt = 0.005
+        backward_euler_dt = 0.0000005
         acceleration = self.accel(t, u, exti)
         return np.array(
             [
@@ -225,7 +225,7 @@ if __name__ == "__main__":
         plt.show()
         sim.runsweep(exti=[0,3], u0=[np.array([0, 0, 0]),np.array([0, 0, 0])], t0=[0,0])
         plt.show()
-        sim.runsweep(exti=list(range(15)), u0=[np.array([0, 0, 0]) for i in range(15)], t0=[0 for i in range(15)])
+        sim.runsweep(exti=list(range(15)), u0=[np.array([0, 0, 5*pi/180]) for i in range(15)], t0=[0 for i in range(15)])
         plt.show()
         heights=[200*i+800 for i in range(11)]
         angles=[pi/180*i**2 for i in range(4)]
