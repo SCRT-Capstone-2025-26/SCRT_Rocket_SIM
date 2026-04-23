@@ -4,9 +4,8 @@ from numpy import sin, cos, pi
 import numpy as np
 from integration import scipyintegrate
 # from data_utilities.dataimport_utilities import np_thrust_data,read_drag_data_np
-
-from data_utilities.interpolation import drag_p_airden_fn
-from data_utilities.equations_n_constants import air_density, thrust, total_mass, mach2v, v2mach, GRAVITY, GOAL_HEIGHT_METERS
+from interpolation import drag_p_airden_fn
+from equations_n_constants import air_density, thrust, total_mass, mach2v, v2mach, GRAVITY, GOAL_HEIGHT_METERS
 import scipy
 
 import os
@@ -171,14 +170,14 @@ class Sim():
         va=0
         vb=1.1
         # If we are always overshooting then our best velocity is 0
-        if (eval(va,h,a,exti))>0:
+        if (self.eval(va,h,a,exti))>0:
             return 0
         # If we are always undershooting then our best velocity is maximum
-        if (eval(vb,h,a,exti))<0:
+        if (self.eval(vb,h,a,exti))<0:
             return 1.2
         while(vb-va>Tol):
             mid_v=(va+vb)/2
-            apogee_mid=eval(mid_v,h,a,exti)
+            apogee_mid=self.eval(mid_v,h,a,exti)
             # print(exti,apogee_mid)
             if apogee_mid<0:
                 va=mid_v
@@ -198,7 +197,7 @@ class Sim():
                     optimal_vel_list+=[self.binary_search(h, a, exti)]
                 if verbose:
                     print(f"Height:{heights[hi]} Angle:{angles[ai]:.3f} vel diff:{100*(max(optimal_vel_list)-min(optimal_vel_list))/min(optimal_vel_list):.3f}%")
-                    # print([float(eval(v, h, a, exti)) for v,exti in zip(optimal_vel_list,[0,1,2,3])])
+                    # print([float(self.eval(v, h, a, exti)) for v,exti in zip(optimal_vel_list,[0,1,2,3])])
                     # print(optimal_vel_list)
                     # print()
                 lookup[hi][ai] += optimal_vel_list
@@ -209,7 +208,7 @@ class Sim():
                 # Prints a stylized error message.
                 raise FileExistsError("\n__________________________________________________\n__________________¶¶¶¶¶¶¶¶¶¶¶¶¶¶__________________\n______________¶¶¶¶_____________¶¶¶¶¶______________\n___________¶¶¶_____________________¶¶¶¶___________\n________¶¶¶¶__________________________¶¶¶_________\n_______¶¶_______________________________¶¶¶_______\n______¶¶__________________________________¶¶______\n____¶¶_____________________________________¶¶_____\n____¶________________________________________¶____\n___¶¶________________________________________¶¶___\n__¶¶_____________¶¶¶__________________________¶___\n___¶___________¶¶_____________________________¶¶__\n___¶___________¶________________¶¶¶___________¶¶__\n___¶_____¶¶_¶¶_¶¶¶¶¶_¶____________¶¶¶__________¶__\n___¶_________¶___¶¶¶¶¶¶¶¶¶¶¶¶______¶¶¶_________¶__\n___¶¶______¶¶¶¶___¶¶¶¶¶¶¶¶¶¶¶¶¶¶____¶¶¶_¶¶____¶¶¶_\n___¶¶____¶¶¶¶¶¶___¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶__¶¶¶¶¶¶¶¶__¶¶__\n___¶____¶¶¶¶¶¶¶____¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶__¶¶¶¶¶¶¶¶¶¶¶___\n__¶¶___¶¶¶¶¶¶¶¶____¶¶¶¶¶¶¶¶¶¶¶¶¶¶__¶¶¶¶¶¶¶¶¶¶¶¶___\n____¶¶¶¶¶¶¶¶¶¶______¶¶¶¶¶¶¶¶¶¶¶¶¶__¶¶¶¶¶¶¶¶¶¶¶____\n______¶¶¶¶¶¶¶___¶¶_____¶¶¶¶¶¶¶¶¶____¶¶¶¶¶¶¶¶¶¶____\n______¶__¶¶¶____¶¶¶___________________¶¶¶¶¶¶¶_____\n_____¶¶________¶¶¶¶¶¶__¶________________¶¶¶_______\n_____¶¶______¶¶¶____¶¶¶¶______________¶¶¶¶________\n______¶¶______¶_______¶¶_________¶¶¶¶¶¶¶¶¶________\n_______¶¶¶¶¶_______________¶_¶¶¶¶¶¶¶¶¶¶¶¶¶________\n___________¶¶¶____¶¶¶¶_¶¶_¶¶¶___¶¶¶¶¶___¶¶________\n____________¶¶¶¶¶_¶__¶¶_¶_¶_¶____¶¶_____¶_________\n_____________¶_____________¶¶_____¶_____¶_________\n______________¶¶¶¶¶_¶¶¶¶¶¶________¶¶____¶_________\n____________________¶¶¶¶¶¶_________¶____¶_________\n_____________________¶¶_¶¶_________¶¶___¶¶________\n______________________¶¶¶¶¶_________¶____¶________\n___Why_is_tables_a_____¶¶¶¶¶_______¶¶____¶¶_______\n___file_it_should_be___¶¶¶¶¶______¶_¶_____¶_______\n___a_directory_to______¶_¶¶¶_____¶__¶¶____¶_______\n___hold_all_the________¶¶¶¶¶____¶¶__¶¶___¶________\n___tables!!____________¶¶¶¶¶__¶¶¶__¶¶___¶_________\n________________________¶¶¶¶¶¶¶__¶¶¶___¶¶_________\n_________________________¶¶_____¶¶¶____¶__________\n____________________________¶¶¶¶______¶___________\n______________________________¶¶_____¶¶___________\n_______________________________¶¶¶¶¶¶¶____________\n__________________________________________________")
             if not os.path.exists("tables"):
-                os.mkdir("tables")
+                os.mkdir(base_path)
 
             np.save(os.path.join(base_path, "angles.npy"), angles)
             np.save(os.path.join(base_path, "heights.npy"), heights)

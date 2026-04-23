@@ -1,9 +1,9 @@
 # TODO add some common sense tests to verify this function
 from scipy.interpolate import make_interp_spline
 from scipy.ndimage import convolve
-from .dataimport_utilities import np_thrust_data, read_drag_data_np
+from ..data_utilities.dataimport_utilities import np_thrust_data, read_drag_data_np
 from .equations_n_constants import air_density, meters2feet
-from .eng_to_csv import eng_to_csv
+from ..data_utilities.eng_to_csv import eng_to_csv
 import os
 
 import numpy as np

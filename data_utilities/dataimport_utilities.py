@@ -1,7 +1,7 @@
 import csv
 import numpy as np
 import dataclasses
-from equations_n_constants import STD_DRAG_CSV_LIST, STD_DRAG_COL_NAMES
+from simulation.equations_n_constants import STD_DRAG_CSV_LIST, STD_DRAG_COL_NAMES
 
 
 def read_thrust_data(filename):
