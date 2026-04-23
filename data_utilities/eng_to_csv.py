@@ -1,5 +1,5 @@
 import csv
-from .dataimport_utilities import read_eng_thrustfile
+from dataimport_utilities import read_eng_thrustfile
 
 
 # Converts a .eng file to a .csv file
@@ -20,7 +20,7 @@ def eng_to_csv(src_filepath, dst_filepath, spec_filepath=None):
 
 # Example usage of functions
 if __name__ == "__main__":
-    src_filepath = "../sample_datasets/AeroTech_N2000W.eng"
-    dst_filepath = "../data/runs/20251114_191130/input/thrust_motor.csv"
-    spec_filepath = "../data/runs/20251114_191130/input/motor_spec.csv"
+    src_filepath = "../sample_datasets/AeroTech_N3300R.eng"
+    dst_filepath = "../data/runs/20260422_1/input/N3300R_thrust.csv"
+    spec_filepath = "../data/runs/20260422_1/input/N3300R_spec.csv"
     eng_to_csv(src_filepath, dst_filepath, spec_filepath)

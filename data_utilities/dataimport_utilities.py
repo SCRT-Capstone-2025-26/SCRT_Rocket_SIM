@@ -1,7 +1,7 @@
 import csv
 import numpy as np
 import dataclasses
-from .equations_n_constants import STD_DRAG_CSV_LIST, STD_DRAG_COL_NAMES
+from equations_n_constants import STD_DRAG_CSV_LIST, STD_DRAG_COL_NAMES
 
 
 def read_thrust_data(filename):
@@ -123,8 +123,8 @@ def read_drag_data(filename):
 
 
 if __name__ == "__main__":
-    # Example trustfile reading
-    print(read_eng_thrustfile("../sample_datasets/AeroTech_N2000W.eng"))
+    # Example thrustfile reading
+    print(read_eng_thrustfile("../sample_datasets/AeroTech_N3300R.eng"))
 
     # Example read_drag_data_np
     # read_drag_data_np(
