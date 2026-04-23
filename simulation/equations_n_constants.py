@@ -40,7 +40,9 @@ def _local_gravity_at_lat(lat):
 
 # Calculates gravity given a specific height
 def gravity_at_alt(h):
-    
+    # Sanity check to ensure height is given in meters
+    if h > 5000:
+        raise ValueError("Height beyond expected value. Height should be in meters.")
     return _local_gravity_at_lat(LATITUDE) * ((radius_r/(radius_r+(h/1000)))**2)
 
 BODY_MASS = 34.0194
@@ -56,6 +58,7 @@ FEET_TO_METERS = 0.3048
 STD_THRUST_CSV = os.path.join(_base_path, "..", "data", "motor_data", "N3300R", "N3300R_thrust.csv")
 
 # Thrust burnout of the current motor in seconds
+# Current motor burnout at 4.455 seconds
 THRUST_BURNOUT = 4.5
 
 # returns the estimated amount of force at a specific point in time
@@ -114,7 +117,6 @@ def v2mach(mach):
 
 
 def thrust(t):
-    # return 3000 if t < 4 else 0
     if t < THRUST_BURNOUT+1:
         return max(thrust_fn(t), 0)
     else:
@@ -132,3 +134,4 @@ def total_mass(t):
 # Note, needs to operate on lists as well
 def meters2feet(m):
     return m * METERS_TO_FEET
+
