@@ -187,6 +187,9 @@ class Sim():
         return mid_v
 
 
+    # Creates a lookup table for the firmware.
+    # The lookup table takes in a height (m), angle (rad), and extension (mm) 
+    #     and outputs an optimal velocity (m/s) for the the extension
     def lookup_table(self, angles, heights, save=False, verbose=True):
         lookup=[[[] for ai in angles] for hi in heights]
         for hi in range(len(heights)):
@@ -201,7 +204,8 @@ class Sim():
                     # print([float(self.eval(v, h, a, exti)) for v,exti in zip(optimal_vel_list,[0,1,2,3])])
                     # print(optimal_vel_list)
                     # print()
-                lookup[hi][ai] += optimal_vel_list
+                # Convert mach values to m/s and add to lookuptable
+                lookup[hi][ai] += [mach2v(m) for m in optimal_vel_list]
         if save:
             base_path = os.path.join(os.path.dirname(__file__), "..", "tables")
 
@@ -227,7 +231,8 @@ if __name__ == "__main__":
         plt.show()
         sim.runsweep(exti=list(range(15)), u0=[np.array([0, 0, 5*pi/180]) for i in range(15)], t0=[0 for i in range(15)])
         plt.show()
-        heights=[200*i+900 for i in range(11)]
+        # Things to vary heights, angles, Tol
+        heights=[200*i+800 for i in range(11)]
         angles=[pi/180*i**2 for i in range(4)]
         Tol=0.001 
         print("Angles:",angles)

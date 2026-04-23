@@ -107,6 +107,7 @@ STD_DRAG_COL_NAMES = ["Extension", "Mach", "Drag Coeff"]
 
 
 # TODO consider local conditions
+# TODO check units used in order to make formula, should be kg/m^3 
 def air_density(h):
     return 1.2 * 0.99988**h
 
