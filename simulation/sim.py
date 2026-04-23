@@ -117,7 +117,7 @@ class Sim():
             axti.set_xlabel("time (s)")
             axti.set_ylabel("mm")
             axti.set_title( "Extension")
-            plt.get_current_fig_manager().full_screen_toggle()
+            plt.get_current_fig_manager()
             fig.show()
 
 
@@ -234,7 +234,7 @@ if __name__ == "__main__":
         # Things to vary heights, angles, Tol
         heights=[200*i+800 for i in range(11)]
         angles=[pi/180*i**2 for i in range(4)]
-        Tol=0.001 
+        Tol=0.0001 
         print("Angles:",angles)
         print("Heights:",heights)
         print("Exts:",sim.get_exts())
