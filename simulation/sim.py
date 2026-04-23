@@ -46,6 +46,7 @@ class Sim():
     # FDS bs
     # the derivative of the state space
     # forcing function f for finite difference scheme accountign for extention
+    # TODO: numerical trick still suspicious, some testing indicates it may be causing issues
     def f_w_ext(self, t, u, exti): 
         h, v, theta = u
         # this is a numerical trick to make sure that the code doesn't break at t=0
@@ -56,7 +57,7 @@ class Sim():
                 v * cos(theta),  # Change in Height
                 acceleration,  # Change in Velocity
                 # acceleration term is to avoid divides by zero
-                -gravity_at_alt(h) * sin(u[2]) / (u[1] + acceleration*backward_euler_dt),  # Change in Zenith
+                -gravity_at_alt(h) * sin(theta) / (v + acceleration*backward_euler_dt),  # Change in Zenith
             ]
         )
 
