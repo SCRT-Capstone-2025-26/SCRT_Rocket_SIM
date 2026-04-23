@@ -46,7 +46,7 @@ def _thrust_init(thrust_filepath=STD_THRUST_CSV):
 thrust_fn = _thrust_init(STD_THRUST_CSV)
 
 
-EXTS = [0, 5, 15, 30]
+EXTS = [i*25./15. for i in range(16)]
 
 STD_DRAG_CSV_LIST = [
         "data/drag_data/Bababooey_Fulldata.csv",
