@@ -26,6 +26,7 @@ class Sim():
 
 
     def drag(self, h, v, theta, exti, t):
+        # If we're pre-burnout, we keep the blades in
         # If the angle is too big we have to retract the blades
         if t < THRUST_BURNOUT or theta * 180 / pi > 20:
             exti = 0
@@ -46,13 +47,13 @@ class Sim():
     # the derivative of the state space
     # forcing function f for finite difference scheme accountign for extention
     def f_w_ext(self, t, u, exti): 
-        h, _, _ = u
+        h, v, theta = u
         # this is a numerical trick to make sure that the code doesn't break at t=0
         backward_euler_dt = 0.0000005
         acceleration = self.accel(t, u, exti)
         return np.array(
             [
-                u[1] * cos(u[2]),  # Change in Height
+                v * cos(theta),  # Change in Height
                 acceleration,  # Change in Velocity
                 # acceleration term is to avoid divides by zero
                 -gravity_at_alt(h) * sin(u[2]) / (u[1] + acceleration*backward_euler_dt),  # Change in Zenith
@@ -167,7 +168,7 @@ class Sim():
         u0=np.array([h,mach2v(v),a])
         return self.apogee(exti,u0,200,t0=THRUST_BURNOUT)-GOAL_HEIGHT_METERS
 
-    def binary_search(self, h,a,exti):
+    def binary_search(self, h, a, exti, tol=0.001):
         va=0.0
         vb=1.0
         # If we are always overshooting then our best velocity is 0
@@ -176,7 +177,7 @@ class Sim():
         # If we are always undershooting then our best velocity is maximum
         if (self.eval(vb,h,a,exti))<0:
             return 1.2
-        while(vb-va>Tol):
+        while(vb-va>tol):
             mid_v=(va+vb)/2
             apogee_mid=self.eval(mid_v,h,a,exti)
             # print(exti,apogee_mid)
@@ -190,7 +191,7 @@ class Sim():
     # Creates a lookup table for the firmware.
     # The lookup table takes in a height (m), angle (rad), and extension (mm) 
     #     and outputs an optimal velocity (m/s) for the the extension
-    def lookup_table(self, angles, heights, save=False, verbose=True):
+    def lookup_table(self, angles, heights, tol=0.001, save=False, verbose=True):
         lookup=[[[] for ai in angles] for hi in heights]
         for hi in range(len(heights)):
             for ai in range(len(angles)):
@@ -198,7 +199,7 @@ class Sim():
                 for exti in range(len(self.exts)):
                     h=heights[hi]
                     a=angles[ai]
-                    optimal_vel_list+=[self.binary_search(h, a, exti)]
+                    optimal_vel_list+=[self.binary_search(h, a, exti, tol)]
                 if verbose:
                     print(f"Height:{heights[hi]} Angle:{angles[ai]:.3f} vel diff:{100*(max(optimal_vel_list)-min(optimal_vel_list))/min(optimal_vel_list):.3f}%")
                     # print([float(self.eval(v, h, a, exti)) for v,exti in zip(optimal_vel_list,[0,1,2,3])])
@@ -234,10 +235,10 @@ if __name__ == "__main__":
         # Things to vary heights, angles, Tol
         heights=[200*i+800 for i in range(11)]
         angles=[pi/180*i**2 for i in range(4)]
-        Tol=0.0001 
+        tol=0.00005
         print("Angles:",angles)
         print("Heights:",heights)
         print("Exts:",sim.get_exts())
-        lookup=sim.lookup_table(angles, heights, save=False)
+        lookup=sim.lookup_table(angles, heights, tol, save=True)
         print("Lookup:")
         print(np.array(lookup))
