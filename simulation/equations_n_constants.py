@@ -121,8 +121,6 @@ def air_density(h):
     p = p_0 * ((1 - (t_lapse * h)/(t_0))**(((g*m)/(r*t_lapse))-1))
     return p
 
-for i in range(0, 4000, 500):
-    print(air_density(i), " ", 1.2 * 0.99988**i)
 
 def mach2v(v):
     return MACH_TO_METERS_SEC * v

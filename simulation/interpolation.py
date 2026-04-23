@@ -34,11 +34,11 @@ def pointwise_concatenate_np(dragdata1,dragdata2):
 def remove_repeats(sorted_drag_data):
     data=sorted_drag_data
     i=0
-    print(len(data[0,:]))
+    # print(len(data[0,:]))
     while i < len(data[0,:])-1:
         if data[0,i]==data[0,i+1]:
             data=pointwise_concatenate_np(data[:,:i+1], data[:,i+2:])
-            print(data[0,i],data[0,i+1])
+            # print(data[0,i],data[0,i+1])
         i+=1
     return data
 
