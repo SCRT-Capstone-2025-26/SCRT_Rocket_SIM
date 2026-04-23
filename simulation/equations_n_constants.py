@@ -45,7 +45,7 @@ def gravity_at_alt(h):
         raise ValueError("Height beyond expected value. Height should be in meters.")
     return _local_gravity_at_lat(LATITUDE) * ((radius_r/(radius_r+(h/1000)))**2)
 
-MOTOR_MASS = 12.05
+MOTOR_MASS = 7.512
 BODY_MASS = 34.0194-MOTOR_MASS
 
 # Should be highest useful precision
@@ -62,6 +62,7 @@ STD_THRUST_CSV = os.path.join(_base_path, "..", "data", "motor_data", "N3300R", 
 # Current motor burnout at 4.455 seconds
 THRUST_BURNOUT = 4.5
 
+
 # returns the estimated amount of force at a specific point in time
 def _thrust_init(thrust_filepath=STD_THRUST_CSV):
     thrust_data = []
@@ -73,9 +74,9 @@ def _thrust_init(thrust_filepath=STD_THRUST_CSV):
     thrust = thrust_data[:, 1]
     return make_interp_spline(timesteps, thrust, k=5)
 
+
 # thrust_fn = None # turned to _thrust_init(STD_THRUST_CSV) when thrust(t) called
 thrust_fn = _thrust_init(STD_THRUST_CSV)
-
 
 EXTS = [i*25./15. for i in range(16)]
 
@@ -104,6 +105,7 @@ STD_DRAG_COL_NAMES = ["Extension", "Mach", "Drag Coeff"]
 
 # Equations
 
+
 # TODO consider local conditions
 def air_density(h):
     return 1.2 * 0.99988**h
@@ -126,11 +128,16 @@ def thrust(t):
 
 
 def motor_mass(t):
-    #TODO: add in actual decreasing motor mass
-    return 0
+    if t <= THRUST_BURNOUT:
+        # Assumes linear burning, which almost but not completely correct
+        return MOTOR_MASS*(1-(t/THRUST_BURNOUT))
+    else:
+        return 0
+    
 
 def total_mass(t):
     return BODY_MASS + motor_mass(t)
+
 
 # Note, needs to operate on lists as well
 def meters2feet(m):
