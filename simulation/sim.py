@@ -223,6 +223,8 @@ if __name__ == "__main__":
         plt.show()
         sim.runsweep(exti=[0,3], u0=[np.array([0, 0, 0]),np.array([0, 0, 0])], t0=[0,0])
         plt.show()
+        sim.runsweep(exti=list(range(15)), u0=[np.array([0, 0, 0]) for i in range(15)], t0=[0 for i in range(15)])
+        plt.show()
         heights=[200*i+800 for i in range(11)]
         angles=[pi/180*i**2 for i in range(4)]
         Tol=0.001 
