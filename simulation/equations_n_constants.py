@@ -41,7 +41,7 @@ def _local_gravity_at_lat(lat):
 # Calculates gravity given a specific height
 def gravity_at_alt(h):
     # Sanity check to ensure height is given in meters
-    if h > 5000:
+    if h > 8000:
         raise ValueError("Height beyond expected value. Height should be in meters.")
     return _local_gravity_at_lat(LATITUDE) * ((radius_r/(radius_r+(h/1000)))**2)
 
