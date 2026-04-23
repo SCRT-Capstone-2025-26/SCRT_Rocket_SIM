@@ -168,11 +168,11 @@ class Sim():
         return self.apogee(exti,u0,200,t0=THRUST_BURNOUT)-GOAL_HEIGHT_METERS
 
     def binary_search(self, h,a,exti):
-        va=0
-        vb=1.1
+        va=0.0
+        vb=1.0
         # If we are always overshooting then our best velocity is 0
         if (self.eval(va,h,a,exti))>0:
-            return 0
+            return 0.0
         # If we are always undershooting then our best velocity is maximum
         if (self.eval(vb,h,a,exti))<0:
             return 1.2
@@ -227,7 +227,7 @@ if __name__ == "__main__":
         plt.show()
         sim.runsweep(exti=list(range(15)), u0=[np.array([0, 0, 5*pi/180]) for i in range(15)], t0=[0 for i in range(15)])
         plt.show()
-        heights=[200*i+800 for i in range(11)]
+        heights=[200*i+900 for i in range(11)]
         angles=[pi/180*i**2 for i in range(4)]
         Tol=0.001 
         print("Angles:",angles)
