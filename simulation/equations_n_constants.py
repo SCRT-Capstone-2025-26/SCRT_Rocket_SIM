@@ -55,6 +55,9 @@ FEET_TO_METERS = 0.3048
 # Current motor burnout at 4.455 seconds
 STD_THRUST_CSV = os.path.join(_base_path, "..", "data", "motor_data", "N3300R", "N3300R_thrust.csv")
 
+# Thrust burnout of the current motor in seconds
+THRUST_BURNOUT = 4.5
+
 # returns the estimated amount of force at a specific point in time
 def _thrust_init(thrust_filepath=STD_THRUST_CSV):
     thrust_data = []
@@ -112,9 +115,11 @@ def v2mach(mach):
 
 def thrust(t):
     # return 3000 if t < 4 else 0
-    return max(thrust_fn(t), 0)
-    
-print(thrust(0.01))
+    if t < THRUST_BURNOUT+1:
+        return max(thrust_fn(t), 0)
+    else:
+        # Shouldn't be called, but just in case
+        return 0
 
 
 def motor_mass(t):
