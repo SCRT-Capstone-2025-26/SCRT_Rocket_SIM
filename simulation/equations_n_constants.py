@@ -21,6 +21,8 @@ FEET_TO_METERS = 0.3048
 
 STD_THRUST_CSV = os.path.join(_base_path, "..", "data", "motor_data", "N3300R_thrust.csv")
 
+EXTS = [0, 5, 15, 30]
+
 STD_DRAG_CSV_LIST = [
         "sample_datasets/SupSonicSweep2_012826_data.csv",
         "sample_datasets/SupSonicSweep4_013026_FullData.csv",

@@ -77,10 +77,10 @@ def find_index(word, csv_data):
 
 
 ########### Depricated, separateing dataimport_utilities and simulation
-# # Input:
-# #     csv_list: a list of csv filepath strings.
-# #     VarNames: a list of substrings in the headers you want data from
-# #         Default values of ['Extension','Mach','Drag Coeff']
+# Input:
+#     csv_list: a list of csv filepath strings.
+#     VarNames: a list of substrings in the headers you want data from
+#         Default values of ['Extension','Mach','Drag Coeff']
 # def read_drag_data_np(
 #     csv_files=STD_DRAG_CSV_LIST,
 #     col_names=STD_DRAG_COL_NAMES,

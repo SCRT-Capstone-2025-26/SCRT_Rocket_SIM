@@ -3,12 +3,11 @@ import numpy as np
 from equations_n_constants import STD_DRAG_COL_NAMES, STD_DRAG_CSV_LIST
 
 # convenient functions
+
 """ Returns the sign of a numeric value
 Input: numeric value
 Output: -1, 1, or 0 depending on the sign of the value
 """
-
-
 def sign(v):
     return abs(v) / v if v != 0 else 0
 

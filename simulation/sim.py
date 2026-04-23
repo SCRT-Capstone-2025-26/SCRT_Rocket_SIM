@@ -7,7 +7,7 @@ import os
 
 from integration import scipyintegrate
 from interpolation import drag_p_airden_fn
-from equations_n_constants import air_density, thrust, total_mass, mach2v, v2mach, GRAVITY, GOAL_HEIGHT_METERS
+from equations_n_constants import air_density, thrust, total_mass, mach2v, v2mach, GRAVITY, GOAL_HEIGHT_METERS, EXTS
 
 ##################CD is actually just drag rn
 
@@ -17,7 +17,7 @@ from equations_n_constants import air_density, thrust, total_mass, mach2v, v2mac
 class Sim():
     def __init__(self):
         self.dragdata = []
-        self.exts = [0, 5, 15, 30]
+        self.exts = EXTS
         self.drag_p_airden = [drag_p_airden_fn(ext) for ext in self.exts]
 
     def get_exts(self):

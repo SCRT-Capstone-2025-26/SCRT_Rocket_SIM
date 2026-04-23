@@ -26,10 +26,12 @@ def plot2d_surf(vars, var_names=["Extension", "Mach", "Drag Coeff"]):
 
 
 if __name__ == "__main__":
-    from dataimport_utilities import read_drag_data_np
+    from utilities import read_drag_data_np
 
     plot2d_surf(read_drag_data_np())
     plot2d_surf(read_drag_data_np(col_names=["Extension", "Mach", "Drag of all"]))
+
+    
     # ext,mach,cd=read_drag_data_np()
     # ext2,cd2=read_drag_data_np(CSVs=['../sample_datasets/SimNoaExtDragCd.csv'],VarNames=['Extension','Drag Coeff'])
     # mach=np.array(list(mach)+[0.75 for i in range(len(ext2))])
