@@ -45,20 +45,24 @@ class Sim():
     
     # FDS bs
     # the derivative of the state space
-    # forcing function f for finite difference scheme accountign for extention
+    # forcing function f for finite difference scheme accounting for extention
     # TODO: numerical trick still suspicious, some testing indicates it may be causing issues
     def f_w_ext(self, t, u, exti): 
         h, v, theta = u
         # this is a numerical trick to make sure that the code doesn't break at t=0
-        backward_euler_dt = 0.0000005
+        # backward_euler_dt = 0.0000005
         acceleration = self.accel(t, u, exti)
-        return np.array(
-            [
-                v * cos(theta),  # Change in Height
-                acceleration,  # Change in Velocity
-                # acceleration term is to avoid divides by zero
-                -gravity_at_alt(h) * sin(theta) / (v + acceleration*backward_euler_dt),  # Change in Zenith
-            ]
+        if v < .1:
+            return np.array([v * cos(theta), acceleration, -gravity_at_alt(h) * sin(theta) / (v + 0.01)])
+        else:
+            return np.array(
+                [
+                    v * cos(theta),  # Change in Height
+                    acceleration,  # Change in Velocity
+                    # acceleration term is to avoid divides by zero
+                    # -gravity_at_alt(h) * sin(theta) / (v + acceleration*backward_euler_dt),  # Change in Zenith (angle)
+                    -gravity_at_alt(h) * sin(theta) / (v),  # Change in zenith angle
+                ]
         )
 
 
@@ -227,16 +231,25 @@ class Sim():
 
 if __name__ == "__main__":
         sim = Sim()
-        sim.runsweep(exti=[3,3], u0=[np.array([0, 0, 20 * pi / 180]),np.array([0, 0, 0])], t0=[0,0])
-        plt.show()
-        sim.runsweep(exti=[0,3], u0=[np.array([0, 0, 0]),np.array([0, 0, 0])], t0=[0,0])
-        plt.show()
-        sim.runsweep(exti=list(range(15)), u0=[np.array([0, 0, 5*pi/180]) for i in range(15)], t0=[0 for i in range(15)])
-        plt.show()
+        # sim.runsweep(exti=[3,3], u0=[np.array([0, 0, 20 * pi / 180]),np.array([0, 0, 0])], t0=[0,0])
+        # plt.show()
+        # sim.runsweep(exti=[0,3], u0=[np.array([0, 0, 0]),np.array([0, 0, 0])], t0=[0,0])
+        # plt.show()
+        # sim.runsweep(exti=list(range(15)), u0=[np.array([0, 0, 5*pi/180]) for i in range(15)], t0=[0 for i in range(15)])
+        # plt.show()
+
         # Things to vary heights, angles, Tol
-        heights=[200*i+800 for i in range(11)]
-        angles=[pi/180*i**2 for i in range(4)]
-        tol=0.00005
+        # Var angle to about 20degrees or 0.35 radians
+
+        # Slow
+        heights=[100*i+800 for i in range(22)]
+        angles=[0.00, 0.04, 0.08, 0.12, 0.16, 0.20, 0.28, 0.35]
+
+        # Fast
+        # heights=[200*i+800 for i in range(11)]
+        # angles=[pi/180*i**2 for i in range(4)]
+
+        tol=0.00001
         print("Angles:",angles)
         print("Heights:",heights)
         print("Exts:",sim.get_exts())
