@@ -230,29 +230,29 @@ class Sim():
 
 
 if __name__ == "__main__":
-        sim = Sim()
-        # sim.runsweep(exti=[3,3], u0=[np.array([0, 0, 20 * pi / 180]),np.array([0, 0, 0])], t0=[0,0])
-        # plt.show()
-        # sim.runsweep(exti=[0,3], u0=[np.array([0, 0, 0]),np.array([0, 0, 0])], t0=[0,0])
-        # plt.show()
-        # sim.runsweep(exti=list(range(15)), u0=[np.array([0, 0, 5*pi/180]) for i in range(15)], t0=[0 for i in range(15)])
-        # plt.show()
+    sim = Sim()
+    # sim.runsweep(exti=[3,3], u0=[np.array([0, 0, 20 * pi / 180]),np.array([0, 0, 0])], t0=[0,0])
+    # plt.show()
+    # sim.runsweep(exti=[0,3], u0=[np.array([0, 0, 0]),np.array([0, 0, 0])], t0=[0,0])
+    # plt.show()
+    # sim.runsweep(exti=list(range(15)), u0=[np.array([0, 0, 5*pi/180]) for i in range(15)], t0=[0 for i in range(15)])
+    # plt.show()
 
-        # Things to vary heights, angles, Tol
-        # Var angle to about 20degrees or 0.35 radians
+    # Things to vary heights, angles, Tol
+    # Var angle to about 20degrees or 0.35 radians
 
-        # Slow
-        heights=[100*i+800 for i in range(22)]
-        angles=[0.00, 0.04, 0.08, 0.12, 0.16, 0.20, 0.28, 0.35]
+    # Slow
+    heights=[100*i+800 for i in range(22)]
+    angles=[0.00, 0.04, 0.08, 0.12, 0.16, 0.20, 0.28, 0.35]
 
-        # Fast
-        # heights=[200*i+800 for i in range(11)]
-        # angles=[pi/180*i**2 for i in range(4)]
+    # Fast
+    # heights=[200*i+800 for i in range(11)]
+    # angles=[pi/180*i**2 for i in range(4)]
 
-        tol=0.00001
-        print("Angles:",angles)
-        print("Heights:",heights)
-        print("Exts:",sim.get_exts())
-        lookup=sim.lookup_table(angles, heights, tol, save=True)
-        print("Lookup:")
-        print(np.array(lookup))
+    tol=0.00001
+    print("Angles:",angles)
+    print("Heights:",heights)
+    print("Exts:",sim.get_exts())
+    lookup=sim.lookup_table(angles, heights, tol, save=True)
+    print("Lookup:")
+    print(np.array(lookup))
