@@ -17,7 +17,6 @@ from equations_n_constants import THRUST_BURNOUT
 
 class Sim():
     def __init__(self):
-        self.dragdata = []
         self.exts = EXTS
         self.drag_p_airden = [drag_p_airden_fn(ext) for ext in self.exts]
 
@@ -31,7 +30,6 @@ class Sim():
         if t < THRUST_BURNOUT or theta * 180 / pi > 20:
             exti = 0
         next_dragdata = air_density(h) * self.drag_p_airden[exti](v2mach(v))
-        self.dragdata += [next_dragdata]
         return next_dragdata
 
 
@@ -174,8 +172,8 @@ class Sim():
         return self.apogee(exti,u0,200,t0=THRUST_BURNOUT)-GOAL_HEIGHT_METERS
 
     def binary_search(self, h, a, exti, tol=0.001):
-        va=0.0
-        vb=2.5
+        va=-1.0
+        vb=5
         # If we are always overshooting then our best velocity is 0
         if (self.eval(va,h,a,exti))>0:
             return va
