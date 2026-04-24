@@ -175,13 +175,13 @@ class Sim():
 
     def binary_search(self, h, a, exti, tol=0.001):
         va=0.0
-        vb=1.0
+        vb=2.5
         # If we are always overshooting then our best velocity is 0
         if (self.eval(va,h,a,exti))>0:
-            return 0.0
+            return va
         # If we are always undershooting then our best velocity is maximum
         if (self.eval(vb,h,a,exti))<0:
-            return 1.2
+            return vb
         while(vb-va>tol):
             mid_v=(va+vb)/2
             apogee_mid=self.eval(mid_v,h,a,exti)
