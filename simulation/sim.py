@@ -52,8 +52,8 @@ class Sim():
         # this is a numerical trick to make sure that the code doesn't break at t=0
         # backward_euler_dt = 0.0000005
         acceleration = self.accel(t, u, exti)
-        if v < .1:
-            return np.array([v * cos(theta), acceleration, -gravity_at_alt(h) * sin(theta) / (v + 0.01)])
+        if v < .01:
+            return np.array([v * cos(theta), acceleration, -gravity_at_alt(h) * sin(theta) / (v + 0.005)])
         else:
             return np.array(
                 [

@@ -51,8 +51,8 @@ def gravity_at_alt(h):
 PROP_MASS = 7.512
 BODY_MASS = 34.0194-PROP_MASS
 
-# Should be highest useful precision
-MACH_TO_METERS_SEC = 340.29
+# Based on settings used in the sim because it varies by conditions
+MACH_TO_METERS_SEC = 335.4162
 
 METERS_TO_FEET = 3.28084
 
