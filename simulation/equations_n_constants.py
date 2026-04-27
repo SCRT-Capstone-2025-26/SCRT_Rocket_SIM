@@ -110,7 +110,7 @@ STD_DRAG_COL_NAMES = ["Extension", "Mach", "Drag Coeff"]
 # WILL BE VERY WRONG IF HEIGHT ABOVE SEA LEVEL IS PASSED FOR h!
 #   (probably some, but not much difference for different days and launch sites)
 # Note this is excessive detail. If it's too costly time wise, we should revert
-# to: return 1.2 * 0.99988**h
+# to: return 1.2 * 0.99988**(h+GROUND_HEIGHT)
 def air_density(h):
     p_0 = 1.05365 # kg/m^3, ground level air density (currently for 1380.09m & 51deg F)
     t_0 = 283.706 # K,  ground level air temperature (std is 273.15)
