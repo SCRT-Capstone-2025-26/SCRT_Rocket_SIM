@@ -1,6 +1,7 @@
 import csv
 import numpy as np
-from equations_n_constants import STD_DRAG_COL_NAMES, STD_DRAG_CSV_LIST
+
+from .equations_n_constants import STD_DRAG_COL_NAMES, STD_DRAG_CSV_LIST
 
 # convenient functions
 

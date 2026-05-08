@@ -5,10 +5,10 @@ import numpy as np
 import scipy
 import os
 
-from integration import scipyintegrate
-from interpolation import drag_p_airden_fn
-from equations_n_constants import air_density, thrust, total_mass, mach2v, v2mach, gravity_at_alt, GOAL_HEIGHT_METERS, EXTS
-from equations_n_constants import THRUST_BURNOUT
+from .integration import scipyintegrate
+from .interpolation import drag_p_airden_fn
+from .equations_n_constants import air_density, thrust, total_mass, mach2v, v2mach, gravity_at_alt, GOAL_HEIGHT_METERS, EXTS
+from .equations_n_constants import THRUST_BURNOUT
 
 ##################CD is actually just drag rn
 
