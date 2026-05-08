@@ -58,7 +58,6 @@ METERS_TO_FEET = 3.28084
 
 FEET_TO_METERS = 0.3048
 
-# Current motor burnout at 4.455 seconds
 STD_THRUST_CSV = os.path.join(_base_path, "..", "data", "motor_data", "N3300R", "N3300R_thrust.csv")
 
 # Thrust burnout of the current motor in seconds
@@ -100,7 +99,7 @@ STD_DRAG_CSV_LIST = [
 #         # os.path.join(_drag_data_path, "FullScaleV9_NoCameraTransonicSweep1_042026.csv"),
 #     ]
 
-STD_DRAG_COL_NAMES = ["Extension", "Mach", "Drag Coeff"]
+STD_DRAG_COL_NAMES = ("Extension", "Mach", "Drag Coeff")
 
 # Equations
 
