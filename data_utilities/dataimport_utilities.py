@@ -1,7 +1,6 @@
 import csv
 import numpy as np
 import dataclasses
-from .equations_n_constants import STD_DRAG_CSV_LIST, STD_DRAG_COL_NAMES
 
 
 def read_thrust_data(filename):
@@ -77,54 +76,56 @@ def find_index(word, csv_data):
             return i
 
 
+########### Depricated, separateing dataimport_utilities and simulation
 # Input:
 #     csv_list: a list of csv filepath strings.
 #     VarNames: a list of substrings in the headers you want data from
 #         Default values of ['Extension','Mach','Drag Coeff']
-def read_drag_data_np(
-    csv_files=STD_DRAG_CSV_LIST,
-    col_names=STD_DRAG_COL_NAMES,
-):  # list of substrings in the headers for which you want data
-    import numpy as np
+# def read_drag_data_np(
+#     csv_files=STD_DRAG_CSV_LIST,
+#     col_names=STD_DRAG_COL_NAMES,
+# ):  # list of substrings in the headers for which you want data
+#     import numpy as np
 
-    # initialize a list for each Variable
-    vars = [[] for i in range(len(col_names))] 
-    for csv_item in csv_files:
-        # get list version of each CSV as a numpy array
-        csv_data = np.array(read_csv_to_list_of_lists(csv_item)) 
-         # adds each variable into it's specific list
-        for vari in range(len(vars)):
-            vars[vari] += [
-                float(csv_data[:, find_index(col_names[vari], csv_data)][i + 1])
-                for i in range(len(csv_data) - 1)
-            ]
-    for vari in range(len(vars)):
-        vars[vari] = np.array(vars[vari])
-    # print(Vars)
-    return vars
+#     # initialize a list for each Variable
+#     vars = [[] for i in range(len(col_names))] 
+#     for csv_item in csv_files:
+#         # get list version of each CSV as a numpy array
+#         csv_data = np.array(read_csv_to_list_of_lists(csv_item)) 
+#          # adds each variable into it's specific list
+#         for vari in range(len(vars)):
+#             vars[vari] += [
+#                 float(csv_data[:, find_index(col_names[vari], csv_data)][i + 1])
+#                 for i in range(len(csv_data) - 1)
+#             ]
+#     for vari in range(len(vars)):
+#         vars[vari] = np.array(vars[vari])
+#     # print(Vars)
+#     return vars
 
 
-def read_drag_data(filename):
-    points = []
-    line = read_drag_data_np(
-        csv_files=[filename], col_names=["Extension", "Mach", "Drag Coeff"]
-    )
-    # TODO: changes VarNames to match the lines in DragPoint
-    for i in range(len(line[1])):
-        point = DragPoint(
-            angle=line[0][i],
-            wind_speed=line[1][i],
-            temperature=line[2][i],
-            ship_speed=line[3][i],
-            drag=line[4][i],
-        )
-        points.append(point)
-    return points
+# Unused, dependent on depricated function
+# def read_drag_data(filename):
+#     points = []
+#     line = read_drag_data_np(
+#         csv_files=[filename], col_names=["Extension", "Mach", "Drag Coeff"]
+#     )
+#     # TODO: changes VarNames to match the lines in DragPoint
+#     for i in range(len(line[1])):
+#         point = DragPoint(
+#             angle=line[0][i],
+#             wind_speed=line[1][i],
+#             temperature=line[2][i],
+#             ship_speed=line[3][i],
+#             drag=line[4][i],
+#         )
+#         points.append(point)
+#     return points
 
 
 if __name__ == "__main__":
-    # Example trustfile reading
-    print(read_eng_thrustfile("../sample_datasets/AeroTech_N2000W.eng"))
+    # Example thrustfile reading
+    print(read_eng_thrustfile("../sample_datasets/AeroTech_N3300R.eng"))
 
     # Example read_drag_data_np
     # read_drag_data_np(

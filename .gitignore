@@ -4,6 +4,9 @@
 # ignore potentially large run data folders
 */runs/*
 
+# ignore table files
+tables/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

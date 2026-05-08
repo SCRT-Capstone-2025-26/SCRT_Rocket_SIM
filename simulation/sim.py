@@ -2,14 +2,13 @@ import matplotlib.pyplot as plt
 
 from numpy import sin, cos, pi
 import numpy as np
-from integration import scipyintegrate
-# from data_utilities.dataimport_utilities import np_thrust_data,read_drag_data_np
-
-from data_utilities.interpolation import drag_p_airden_fn
-from data_utilities.equations_n_constants import air_density, thrust, total_mass, mach2v, v2mach, GRAVITY, GOAL_HEIGHT_METERS
 import scipy
-
 import os
+
+from integration import scipyintegrate
+from interpolation import drag_p_airden_fn
+from equations_n_constants import air_density, thrust, total_mass, mach2v, v2mach, gravity_at_alt, GOAL_HEIGHT_METERS, EXTS
+from equations_n_constants import THRUST_BURNOUT
 
 ##################CD is actually just drag rn
 
@@ -18,8 +17,7 @@ import os
 
 class Sim():
     def __init__(self):
-        self.dragdata = []
-        self.exts = [0, 5, 15, 30]
+        self.exts = EXTS
         self.drag_p_airden = [drag_p_airden_fn(ext) for ext in self.exts]
 
     def get_exts(self):
@@ -27,11 +25,11 @@ class Sim():
 
 
     def drag(self, h, v, theta, exti, t):
+        # If we're pre-burnout, we keep the blades in
         # If the angle is too big we have to retract the blades
-        if t < 4 or theta * 180 / pi > 20:
+        if t < THRUST_BURNOUT or theta > np.deg2rad(20):
             exti = 0
         next_dragdata = air_density(h) * self.drag_p_airden[exti](v2mach(v))
-        self.dragdata += [next_dragdata]
         return next_dragdata
 
 
@@ -39,24 +37,30 @@ class Sim():
     # TODO add derivation documentation
     def accel(self, t, u, exti):
         h, v, theta = u
-        # TODO np.cos(theta)*GRAVITY is correct, whiteboarded work needs to be documented.
-        return ((-self.drag(h, v, theta, exti, t) + thrust(t)) / total_mass(t)) + np.cos(theta)*GRAVITY
+        # TODO np.cos(theta)*gravity_at_alt(h) is correct, whiteboarded work needs to be documented.
+        return ((-self.drag(h, v, theta, exti, t) + thrust(t)) / total_mass(t)) + np.cos(theta)*gravity_at_alt(h)
     
     
     # FDS bs
     # the derivative of the state space
-    # forcing function f for finite difference scheme accountign for extention
+    # forcing function f for finite difference scheme accounting for extention
+    # TODO: numerical trick still suspicious, some testing indicates it may be causing issues
     def f_w_ext(self, t, u, exti): 
+        h, v, theta = u
         # this is a numerical trick to make sure that the code doesn't break at t=0
-        backward_euler_dt = 0.005
+        # backward_euler_dt = 0.0000005
         acceleration = self.accel(t, u, exti)
-        return np.array(
-            [
-                u[1] * cos(u[2]),  # Change in Height
-                acceleration,  # Change in Velocity
-                # acceleration term is to avoid divides by zero
-                -GRAVITY * sin(u[2]) / (u[1] + acceleration*backward_euler_dt),  # Change in Zenith
-            ]
+        if v < .01:
+            return np.array([v * cos(theta), acceleration, -gravity_at_alt(h) * sin(theta) / (v + 0.005)])
+        else:
+            return np.array(
+                [
+                    v * cos(theta),  # Change in Height
+                    acceleration,  # Change in Velocity
+                    # acceleration term is to avoid divides by zero
+                    # -gravity_at_alt(h) * sin(theta) / (v + acceleration*backward_euler_dt),  # Change in Zenith (angle)
+                    -gravity_at_alt(h) * sin(theta) / (v),  # Change in zenith angle
+                ]
         )
 
 
@@ -80,7 +84,7 @@ class Sim():
         return np.max(f[:, 0])
 
 
-    def runsweep(self, headless=False, exti=[3], u0=[np.array([0, 0, 1 / 15])], t0=[4]):
+    def runsweep(self, headless=False, exti=(3,), u0=(np.array([0, 0, 1 / 15]),), t0=(THRUST_BURNOUT,)):
         # initial conditions
         t=200
         dt = 0.05
@@ -99,7 +103,7 @@ class Sim():
 
                 ax2_v.plot(time[i], u[i][:, 1], label=f"ext={self.exts[exti[i]]} angle={u0[i][2]*180/pi:.2f}")
                 ax3_angle.plot(time[i], u[i][:, 2] * 180/pi, label=f"ext={self.exts[exti[i]]} angle={u0[i][2]*180/pi:.2f}")
-                axti.plot(time[i], np.array([0 if (time[i][t] < 4 or u[i][t,2] * 180 / pi > 20) else self.exts[exti[i]] for t in range(len(time[i]))]), label=f"ext={self.exts[exti[i]]} angle={u0[i][2]*180/pi:.2f}")
+                axti.plot(time[i], np.array([0 if (time[i][t] < THRUST_BURNOUT or u[i][t,2] * 180 / pi > 20) else self.exts[exti[i]] for t in range(len(time[i]))]), label=f"ext={self.exts[exti[i]]} angle={u0[i][2]*180/pi:.2f}")
             ax1_h.plot(time[i], np.full(len(time[i]), GOAL_HEIGHT_METERS), label="Goal height")
             ax1_h.legend()
             ax1_h.set_xlabel("time (s)")
@@ -117,11 +121,11 @@ class Sim():
             axti.set_xlabel("time (s)")
             axti.set_ylabel("mm")
             axti.set_title( "Extension")
-            plt.get_current_fig_manager().full_screen_toggle()
+            plt.get_current_fig_manager()
             fig.show()
 
 
-    def run(self, headless=False, exti=3, u0=np.array([0, 0, 1 / 15]), t0=4):
+    def run(self, headless=False, exti=3, u0=np.array([0, 0, 1 / 15]), t0=THRUST_BURNOUT):
         # initial conditions
         # T=200
         dt = 0.05
@@ -165,20 +169,20 @@ class Sim():
 
     def eval(self, v,h,a,exti):
         u0=np.array([h,mach2v(v),a])
-        return self.apogee(exti,u0,200,t0=4)-GOAL_HEIGHT_METERS
+        return self.apogee(exti,u0,200,t0=THRUST_BURNOUT)-GOAL_HEIGHT_METERS
 
-    def binary_search(self, h,a,exti):
-        va=0
-        vb=1.1
+    def binary_search(self, h, a, exti, tol=0.001):
+        va=-1.0
+        vb=5
         # If we are always overshooting then our best velocity is 0
-        if (eval(va,h,a,exti))>0:
-            return 0
+        if (self.eval(va,h,a,exti))>0:
+            return va
         # If we are always undershooting then our best velocity is maximum
-        if (eval(vb,h,a,exti))<0:
-            return 1.2
-        while(vb-va>Tol):
+        if (self.eval(vb,h,a,exti))<0:
+            return vb
+        while(vb-va>tol):
             mid_v=(va+vb)/2
-            apogee_mid=eval(mid_v,h,a,exti)
+            apogee_mid=self.eval(mid_v,h,a,exti)
             # print(exti,apogee_mid)
             if apogee_mid<0:
                 va=mid_v
@@ -187,7 +191,10 @@ class Sim():
         return mid_v
 
 
-    def lookup_table(self, angles, heights, save=False, verbose=True):
+    # Creates a lookup table for the firmware.
+    # The lookup table takes in a height (m), angle (rad), and extension (mm) 
+    #     and outputs an optimal velocity (m/s) for the the extension
+    def lookup_table(self, angles, heights, tol=0.001, save=False, verbose=True):
         lookup=[[[] for ai in angles] for hi in heights]
         for hi in range(len(heights)):
             for ai in range(len(angles)):
@@ -195,21 +202,22 @@ class Sim():
                 for exti in range(len(self.exts)):
                     h=heights[hi]
                     a=angles[ai]
-                    optimal_vel_list+=[self.binary_search(h, a, exti)]
+                    optimal_vel_list+=[self.binary_search(h, a, exti, tol)]
                 if verbose:
                     print(f"Height:{heights[hi]} Angle:{angles[ai]:.3f} vel diff:{100*(max(optimal_vel_list)-min(optimal_vel_list))/min(optimal_vel_list):.3f}%")
-                    # print([float(eval(v, h, a, exti)) for v,exti in zip(optimal_vel_list,[0,1,2,3])])
+                    # print([float(self.eval(v, h, a, exti)) for v,exti in zip(optimal_vel_list,[0,1,2,3])])
                     # print(optimal_vel_list)
                     # print()
-                lookup[hi][ai] += optimal_vel_list
+                # Convert mach values to m/s and add to lookuptable
+                lookup[hi][ai] += [mach2v(m) for m in optimal_vel_list]
         if save:
-            base_path = os.path.join(os.path.abspath(__file__), "..", "tables")
+            base_path = os.path.join(os.path.dirname(__file__), "..", "tables")
 
             if os.path.isfile(base_path):
                 # Prints a stylized error message.
                 raise FileExistsError("\n__________________________________________________\n__________________¶¶¶¶¶¶¶¶¶¶¶¶¶¶__________________\n______________¶¶¶¶_____________¶¶¶¶¶______________\n___________¶¶¶_____________________¶¶¶¶___________\n________¶¶¶¶__________________________¶¶¶_________\n_______¶¶_______________________________¶¶¶_______\n______¶¶__________________________________¶¶______\n____¶¶_____________________________________¶¶_____\n____¶________________________________________¶____\n___¶¶________________________________________¶¶___\n__¶¶_____________¶¶¶__________________________¶___\n___¶___________¶¶_____________________________¶¶__\n___¶___________¶________________¶¶¶___________¶¶__\n___¶_____¶¶_¶¶_¶¶¶¶¶_¶____________¶¶¶__________¶__\n___¶_________¶___¶¶¶¶¶¶¶¶¶¶¶¶______¶¶¶_________¶__\n___¶¶______¶¶¶¶___¶¶¶¶¶¶¶¶¶¶¶¶¶¶____¶¶¶_¶¶____¶¶¶_\n___¶¶____¶¶¶¶¶¶___¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶__¶¶¶¶¶¶¶¶__¶¶__\n___¶____¶¶¶¶¶¶¶____¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶__¶¶¶¶¶¶¶¶¶¶¶___\n__¶¶___¶¶¶¶¶¶¶¶____¶¶¶¶¶¶¶¶¶¶¶¶¶¶__¶¶¶¶¶¶¶¶¶¶¶¶___\n____¶¶¶¶¶¶¶¶¶¶______¶¶¶¶¶¶¶¶¶¶¶¶¶__¶¶¶¶¶¶¶¶¶¶¶____\n______¶¶¶¶¶¶¶___¶¶_____¶¶¶¶¶¶¶¶¶____¶¶¶¶¶¶¶¶¶¶____\n______¶__¶¶¶____¶¶¶___________________¶¶¶¶¶¶¶_____\n_____¶¶________¶¶¶¶¶¶__¶________________¶¶¶_______\n_____¶¶______¶¶¶____¶¶¶¶______________¶¶¶¶________\n______¶¶______¶_______¶¶_________¶¶¶¶¶¶¶¶¶________\n_______¶¶¶¶¶_______________¶_¶¶¶¶¶¶¶¶¶¶¶¶¶________\n___________¶¶¶____¶¶¶¶_¶¶_¶¶¶___¶¶¶¶¶___¶¶________\n____________¶¶¶¶¶_¶__¶¶_¶_¶_¶____¶¶_____¶_________\n_____________¶_____________¶¶_____¶_____¶_________\n______________¶¶¶¶¶_¶¶¶¶¶¶________¶¶____¶_________\n____________________¶¶¶¶¶¶_________¶____¶_________\n_____________________¶¶_¶¶_________¶¶___¶¶________\n______________________¶¶¶¶¶_________¶____¶________\n___Why_is_tables_a_____¶¶¶¶¶_______¶¶____¶¶_______\n___file_it_should_be___¶¶¶¶¶______¶_¶_____¶_______\n___a_directory_to______¶_¶¶¶_____¶__¶¶____¶_______\n___hold_all_the________¶¶¶¶¶____¶¶__¶¶___¶________\n___tables!!____________¶¶¶¶¶__¶¶¶__¶¶___¶_________\n________________________¶¶¶¶¶¶¶__¶¶¶___¶¶_________\n_________________________¶¶_____¶¶¶____¶__________\n____________________________¶¶¶¶______¶___________\n______________________________¶¶_____¶¶___________\n_______________________________¶¶¶¶¶¶¶____________\n__________________________________________________")
-            if not os.path.exists("tables"):
-                os.mkdir("tables")
+            if not os.path.exists(base_path):
+                os.mkdir(base_path)
 
             np.save(os.path.join(base_path, "angles.npy"), angles)
             np.save(os.path.join(base_path, "heights.npy"), heights)
@@ -220,18 +228,29 @@ class Sim():
 
 
 if __name__ == "__main__":
-        sim = Sim()
-        sim.runsweep(exti=[3,3], u0=[np.array([0, 0, 20 * pi / 180]),np.array([0, 0, 0])], t0=[0,0])
-        plt.show()
-        sim.runsweep(exti=[0,3], u0=[np.array([0, 0, 0]),np.array([0, 0, 0])], t0=[0,0])
-        plt.show()
-        heights=[200*i+800 for i in range(11)]
-        angles=[pi/180*i**2 for i in range(4)]
-        Tol=0.001 
-        print("Angles:",angles)
-        print("Heights:",heights)
-        print("Exts:",sim.get_exts())
-        lookup=sim.lookup_table(angles, heights, save=False)
-        print("Lookup:")
-        print(np.array(lookup))
-        
+    sim = Sim()
+    # sim.runsweep(exti=[3,3], u0=[np.array([0, 0, 20 * pi / 180]),np.array([0, 0, 0])], t0=[0,0])
+    # plt.show()
+    # sim.runsweep(exti=[0,3], u0=[np.array([0, 0, 0]),np.array([0, 0, 0])], t0=[0,0])
+    # plt.show()
+    # sim.runsweep(exti=list(range(15)), u0=[np.array([0, 0, 5*pi/180]) for i in range(15)], t0=[0 for i in range(15)])
+    # plt.show()
+
+    # Things to vary heights, angles, Tol
+    # Var angle to about 20degrees or 0.35 radians
+
+    # Slow
+    heights=[100*i+800 for i in range(22)]
+    angles=[0.00, 0.04, 0.08, 0.12, 0.16, 0.20, 0.28, 0.35]
+
+    # Fast
+    # heights=[200*i+800 for i in range(11)]
+    # angles=[pi/180*i**2 for i in range(4)]
+
+    tol=0.00001
+    print("Angles:",angles)
+    print("Heights:",heights)
+    print("Exts:",sim.get_exts())
+    lookup=sim.lookup_table(angles, heights, tol, save=True)
+    print("Lookup:")
+    print(np.array(lookup))

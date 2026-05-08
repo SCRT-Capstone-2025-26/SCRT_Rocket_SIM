@@ -1,29 +1,16 @@
 # TODO add some common sense tests to verify this function
 from scipy.interpolate import make_interp_spline
 from scipy.ndimage import convolve
-from .dataimport_utilities import np_thrust_data, read_drag_data_np
-from .equations_n_constants import air_density, meters2feet
-from .eng_to_csv import eng_to_csv
-import os
+from utilities import np_thrust_data, read_drag_data_np
+from equations_n_constants import air_density, meters2feet, STD_THRUST_CSV
 
 import numpy as np
 import matplotlib.pyplot as plt
 
 
 # returns the estimated amount of force at a specific point in time
-def thrust_init():
-    # TODO: make this file a non test file.
-    directory_name = "../data/runs/20251114_191130/input/"
-    try:
-        os.mkdir(directory_name)
-    except FileExistsError:
-        pass
-    src_filepath = "../sample_datasets/AeroTech_N2000W.eng"
-    dst_filepath = "../data/runs/20251114_191130/input/thrust_motor.csv"
-    spec_filepath = "../data/runs/20251114_191130/input/motor_spec.csv"
-    eng_to_csv(src_filepath, dst_filepath, spec_filepath)
-
-    thrust_data = np_thrust_data("../data/runs/20251114_191130/input/thrust_motor.csv")
+def thrust_init(thrust_filepath=STD_THRUST_CSV):
+    thrust_data = np_thrust_data(thrust_filepath)
     timesteps = thrust_data[:, 0]
     thrust = thrust_data[:, 1]
     return make_interp_spline(timesteps, thrust, k=5)
@@ -38,6 +25,24 @@ def find_drag_from_exti(drag_data, fixed_ext, exti=0, err=0.0001):
                 good_data[j] += [drag_data[j][i]]
     return good_data
 
+#this takes in np arrays with multiple entries and concatenates them
+def pointwise_concatenate_np(dragdata1,dragdata2):
+    return np.array([np.array(list(dragdata1[i])+list(dragdata2[i])) for i in range(len(dragdata1))])
+
+
+#removes duplicates from the first collumn of the data
+def remove_repeats(sorted_drag_data):
+    data=sorted_drag_data
+    i=0
+    # print(len(data[0,:]))
+    while i < len(data[0,:])-1:
+        if data[0,i]==data[0,i+1]:
+            data=pointwise_concatenate_np(data[:,:i+1], data[:,i+2:])
+            # print(data[0,i],data[0,i+1])
+        i+=1
+    return data
+
+
 
 def drag_p_airden_fn(fixed_ext):
     drag_data = np.array(
@@ -50,7 +55,7 @@ def drag_p_airden_fn(fixed_ext):
     )
     sort_indices = np.argsort(drag_data[0, :])
     drag_data = drag_data[:, sort_indices]
-
+    drag_data=remove_repeats(drag_data)
 
     machsteps = drag_data[0, :]
     drag = drag_data[1, :] / air_density(meters2feet(drag_data[2, :]))
