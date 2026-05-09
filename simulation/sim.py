@@ -4,7 +4,6 @@ from numpy import sin, cos, pi
 import numpy as np
 import scipy
 import os
-import math
 
 from integration import scipyintegrate
 from interpolation import drag_p_airden_fn
