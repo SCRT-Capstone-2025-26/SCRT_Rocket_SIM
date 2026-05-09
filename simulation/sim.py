@@ -15,10 +15,23 @@ from equations_n_constants import THRUST_BURNOUT
 # physical constants and simple equations imported from data_utilities.equations_n_constants
 # TODO add comments
 
+HEIGHT_INDEX   = 0
+VELOCITY_INDEX = 1
+ANGLE_INDEX    = 2
+
 class Sim():
     def __init__(self):
         self.exts = EXTS
         self.drag_p_airden = [drag_p_airden_fn(ext) for ext in self.exts]
+
+        # TODO: This should be changed to ext instead of exti
+        #  but changing drag to have self.drag_p_airden(ext)(v2mach(v))
+        #  causes errors
+        self.exti         = 0
+        self.time         = None
+        self.state        = None
+        self._integration = None
+
 
     def get_exts(self):
         return self.exts
@@ -82,6 +95,41 @@ class Sim():
     def apogee(self, exti, u0, t, t0, dt=0.05):
         f, time = self.run_scipy(dt=dt, exti=exti, t=t, t0=t0, u0=u0)
         return np.max(f[:, 0])
+
+
+    @property
+    def curr_time(self):
+        if self._integration is None:
+            raise Exception("Must call reset state before getting time")
+
+        return self._integration.t
+
+
+    @property
+    def curr_state(self):
+        if self._integration is None:
+            raise Exception("Must call reset state before getting state")
+
+        return self._integration.y
+
+
+    # The launch rail is about 4 degrees
+    def set_state(self, state=(0.0, 0.0, np.deg2rad(4)), time=0.0, max_step=0.1):
+        self._integration = scipy.integrate.RK45(
+            lambda t, u: self.f_w_ext(t, u, self.exti),
+            time,
+            state,
+            t_bound=np.inf,
+            max_step=max_step
+        )
+
+
+    # Returns the timestep size
+    def step_state(self):
+        if self._integration is None:
+            raise Exception("Must call reset state before stepping state")
+
+        self._integration.step()
 
 
     def runsweep(self, headless=False, exti=(3,), u0=(np.array([0, 0, 1 / 15]),), t0=(THRUST_BURNOUT,)):
