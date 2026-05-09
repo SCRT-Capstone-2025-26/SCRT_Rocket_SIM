@@ -20,7 +20,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          # This installs the dependencies there is probably a better way
+          pip install -e .
           pip install ruff pytest
       - name: Lint with Ruff
         run: |

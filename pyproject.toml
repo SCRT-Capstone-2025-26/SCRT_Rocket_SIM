@@ -4,6 +4,16 @@ version = "1.0"
 description = "SCRT Simulation"
 readme = "README.md"
 license-files = ["LICENSE"]
+dependencies = [
+    "matplotlib==3.10.9",
+    "numpy==2.4.4",
+    "scipy==1.17.0",
+]
+
+[optional-dependencies]
+dev = [
+    "pytest==9.0.3",
+]
 
 [tool.setuptools]
 package-dir = {"scrt" = "simulation"}
