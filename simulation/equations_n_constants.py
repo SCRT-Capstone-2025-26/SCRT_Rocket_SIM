@@ -58,7 +58,7 @@ METERS_TO_FEET = 3.28084
 
 FEET_TO_METERS = 0.3048
 
-STD_THRUST_CSV = os.path.join(_base_path, "..", "data", "motor_data", "N3300R", "N3300R_thrust.csv")
+STD_THRUST_CSV = os.path.join(_base_path, "data", "motor_data", "N3300R", "N3300R_thrust.csv")
 
 # Thrust burnout of the current motor in seconds
 # Current motor burnout at 4.455 to 4.519 seconds
@@ -82,7 +82,7 @@ thrust_fn = _thrust_init(STD_THRUST_CSV)
 
 EXTS = [i*25./15. for i in range(16)]
 
-_drag_data_path = os.path.join(_base_path, "..", "data", "drag_data")
+_drag_data_path = os.path.join(_base_path, "data", "drag_data")
 STD_DRAG_CSV_LIST = [
         os.path.join(_drag_data_path, "Bababooey_Fulldata.csv"),
         os.path.join(_drag_data_path, "DataCollSweep1_Fulldata_042026.csv"),
