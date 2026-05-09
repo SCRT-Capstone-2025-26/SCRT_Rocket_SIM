@@ -28,8 +28,6 @@ class Sim():
         #  but changing drag to have self.drag_p_airden(ext)(v2mach(v))
         #  causes errors
         self.exti         = 0
-        self.time         = None
-        self.state        = None
         self._integration = None
 
 
@@ -100,7 +98,7 @@ class Sim():
     @property
     def curr_time(self):
         if self._integration is None:
-            raise Exception("Must call reset state before getting time")
+            raise Exception("Must call set state before getting time")
 
         return self._integration.t
 
@@ -108,13 +106,13 @@ class Sim():
     @property
     def curr_state(self):
         if self._integration is None:
-            raise Exception("Must call reset state before getting state")
+            raise Exception("Must call set state before getting state")
 
         return self._integration.y
 
 
-    # The launch rail is about 4 degrees
-    def set_state(self, state=(0.0, 0.0, np.deg2rad(4)), time=0.0, max_step=0.1):
+    # Angle doesn't seem to work (maybe during launch)
+    def set_state(self, state=(0.0, 0.0, 0.0), time=0.0, max_step=0.1):
         self._integration = scipy.integrate.RK45(
             lambda t, u: self.f_w_ext(t, u, self.exti),
             time,
@@ -127,7 +125,7 @@ class Sim():
     # Returns the timestep size
     def step_state(self):
         if self._integration is None:
-            raise Exception("Must call reset state before stepping state")
+            raise Exception("Must call set state before stepping state")
 
         self._integration.step()
 
