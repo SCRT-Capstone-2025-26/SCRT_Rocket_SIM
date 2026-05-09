@@ -4,10 +4,11 @@ from numpy import sin, cos, pi
 import numpy as np
 import scipy
 import os
+import math
 
 from integration import scipyintegrate
 from interpolation import drag_p_airden_fn
-from equations_n_constants import air_density, thrust, total_mass, mach2v, v2mach, gravity_at_alt, GOAL_HEIGHT_METERS, EXTS
+from equations_n_constants import RAIL_HEIGHT, air_density, thrust, total_mass, mach2v, v2mach, gravity_at_alt, GOAL_HEIGHT_METERS, EXTS
 from equations_n_constants import THRUST_BURNOUT
 
 ##################CD is actually just drag rn
@@ -55,24 +56,33 @@ class Sim():
     # FDS bs
     # the derivative of the state space
     # forcing function f for finite difference scheme accounting for extention
-    # TODO: numerical trick still suspicious, some testing indicates it may be causing issues
     def f_w_ext(self, t, u, exti): 
         h, v, theta = u
         # this is a numerical trick to make sure that the code doesn't break at t=0
         # backward_euler_dt = 0.0000005
         acceleration = self.accel(t, u, exti)
-        if v < .01:
-            return np.array([v * cos(theta), acceleration, -gravity_at_alt(h) * sin(theta) / (v + 0.005)])
+        
+        v_eps = 0.001
+        # Angle struggles during launch since v is small
+        #  I don't really care so this may be totally wrong
+        if h < RAIL_HEIGHT:
+            dzenith = 0.0
+        # I have no idea if this is correct numerical stuff
+        #  basically this clamps v to not be smaller than v_eps
+        #  and if it is then sets it to v_eps preserving the sign
+        elif np.abs(v) < v_eps:
+            v_sign = 1 if v >= 0 else -1
+            dzenith = -gravity_at_alt(h) * sin(theta) / (v_sign * v_eps)
         else:
-            return np.array(
-                [
-                    v * cos(theta),  # Change in Height
-                    acceleration,  # Change in Velocity
-                    # acceleration term is to avoid divides by zero
-                    # -gravity_at_alt(h) * sin(theta) / (v + acceleration*backward_euler_dt),  # Change in Zenith (angle)
-                    -gravity_at_alt(h) * sin(theta) / (v),  # Change in zenith angle
-                ]
-        )
+            dzenith = -gravity_at_alt(h) * sin(theta) / v
+
+        return np.array([
+            v * cos(theta),  # Change in Height
+            acceleration,  # Change in Velocity
+            # acceleration term is to avoid divides by zero
+            # -gravity_at_alt(h) * sin(theta) / (v + acceleration*backward_euler_dt),  # Change in Zenith (angle)
+            dzenith
+        ])
 
 
     def run_scipy(
