@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-from equations_n_constants import STD_DRAG_COL_NAMES
+
+from .equations_n_constants import STD_DRAG_COL_NAMES
 
 # Plots a 2d data in a 3D graph
 # Input:
