@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from equations_n_constants import air_density, mach2v
 from utilities import read_drag_data_np
 
-# TODO: Check altitude is in meters
 ext, mach, all_drag, alt = np.array(read_drag_data_np(col_names=["Extension", "Mach", "Drag of all", "Altitude"]))
 
 vel = mach2v(mach)
@@ -14,9 +13,9 @@ drag_p_airden = all_drag / air_density(alt)
 # This is a function (or callable)
 # It's args are extension and velocity
 drag_p_airden_interp = LinearNDInterpolator(np.stack((ext, vel), axis=1), drag_p_airden)
+
 min_vel = np.min(vel)
 min_drag_p_airden = np.min(drag_p_airden)
-
 max_vel = np.max(vel)
 max_drag_p_airden = np.max(drag_p_airden)
 
@@ -31,6 +30,7 @@ def get_drag_p_airden(ext, vel):
         return max_drag_p_airden
 
     return drag_p_airden_interp(ext, vel)
+
 
 if __name__ == '__main__':
     X = np.linspace(-5, 30, 200)
