@@ -1,0 +1,58 @@
+\UseRawInputEncoding
+\documentclass[12pt]{amsart}
+\usepackage{epsfig, color, amsmath, esint, hyperref, mathrsfs, xcolor, bm, float, enumerate, mathtools, comment, amsfonts, amssymb,wasysym}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows}
+\headheight=6.15pt \textheight=8.75in \textwidth=6.5in
+\oddsidemargin=0in \evensidemargin=0in \topmargin=0in
+\hypersetup{colorlinks}
+\hypersetup{citecolor=blue}
+\hypersetup{urlcolor=blue}
+\makeatother
+\theoremstyle{definition}
+\def\fnum{equation}
+\newtheorem{Prob}{Problem}
+\newtheorem{BProb}{Bonus Problem}
+%%numbering for equations
+\renewcommand{\rm}{\normalshape} %makes rm mean roman
+\newcommand{\diam}{{\text {diam}}}
+\newcommand{\Id}{\text{Id}}
+\newcommand{\iso}{\text{Iso}}
+\newcommand{\Ric}{\text{Ric}}
+\newcommand{\vv}{\mathrm{v}}
+\newcommand{\ww}{\mathrm{w}}
+\newcommand{\pghd}{d _{pGH}}
+\newcommand{\ghd}{d_{GH}}
+\newcommand{\inte}{\text{int}}
+\theoremstyle{definition}
+\newtheorem{exmp}{Example}[section]
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{prop}{Prop}
+
+\begin{document}
+
+First we start with the equation
+\begin{eqnarray}
+  \hat y\cdot v=\cos(\theta)|v||\hat y|=\cos(\theta)|v|
+\end{eqnarray}
+
+Where $\hat y$ is the unit zenith vector (the up direction) v is the velocity
+vector and $\theta$ is the zenith angle.
+This equation is true by definition of the zenith angle.
+
+Next we take the deriavtive of this function to get:
+
+\begin{eqnarray}
+  \hat y\cdot dv=\sin(\theta)d\theta+\cos(\theta)\frac{d}{dt}|v|\\
+\end{eqnarray}
+\begin{eqnarray}
+  \frac{d}{dt}|v|=
+  \frac{d}{dt}\sqrt{v\cdot v}=
+  \frac{v\cdot dv+dv\cdot v}{2\sqrt{v\cdot v}}=\\
+  \frac{dv\cdot v}{|v|}\implies\\
+  \hat y\cdot dv=\sin(\theta)d\theta+\cos(\theta)\frac{dv\cdot v}{|v|}
+\end{eqnarray}
+
+\end{document}
