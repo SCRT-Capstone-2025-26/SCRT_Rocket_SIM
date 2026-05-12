@@ -1,44 +1,44 @@
-from scipy.interpolate import LinearNDInterpolator
+from scipy.interpolate import RBFInterpolator
 import numpy as np
 import matplotlib.pyplot as plt
 
-from .equations_n_constants import air_density, mach2v
+from .equations_n_constants import air_density, mach2v, feet2meters
 from .utilities import read_drag_data_np
 
-# TODO: Check altitude is in meters
-ext, mach, all_drag, alt = np.array(read_drag_data_np(col_names=["Extension", "Mach", "Drag of all", "Altitude"]))
+ext, mach, all_drag, alt_ft = np.array(read_drag_data_np(col_names=["Extension", "Mach", "Drag of all", "Altitude"]))
 
 vel = mach2v(mach)
-drag_p_airden = all_drag / air_density(alt)
+drag_p_airden = all_drag / air_density(feet2meters(alt_ft))
 
 # This is a function (or callable)
 # It's args are extension and velocity
-drag_p_airden_interp = LinearNDInterpolator(np.stack((ext, vel), axis=1), drag_p_airden)
-min_vel = np.min(vel)
-min_drag_p_airden = np.min(drag_p_airden)
+data = np.stack((ext, vel), axis=1)
+drag_p_airden_interp = RBFInterpolator(data, drag_p_airden, smoothing=10)
 
-max_vel = np.max(vel)
-max_drag_p_airden = np.max(drag_p_airden)
-
-# ext must be a in the range of exts
+# The vectorize is to make it run in the plot code
 @np.vectorize
 def get_drag_p_airden(ext, vel):
-    # If the velocity is small or big enough to where we don't have data I just do this
-    #  there is probably a better way maybe a linear interpolation would be better
-    if vel < min_vel:
-        return min_drag_p_airden
-    if vel > max_vel:
-        return max_drag_p_airden
+    # I don't know why this is the shape the interp wants
+    return drag_p_airden_interp(((ext, vel),))[0]
 
-    return drag_p_airden_interp(ext, vel)
 
 if __name__ == '__main__':
-    X = np.linspace(-5, 30, 200)
-    Y = np.linspace(-5, 400, 1000)
+    X = np.linspace(-5, 30, 35 * 3)
+    Y = np.linspace(-5, 400, 405 * 3)
     X, Y = np.meshgrid(X, Y)
     Z = get_drag_p_airden(X, Y)
-    plt.pcolormesh(X, Y, Z, shading='auto')
-    plt.legend()
-    plt.colorbar()
+
+    fig = plt.figure()
+    ax = fig.add_subplot(projection='3d', computed_zorder=False)
+
+    surf = ax.plot_surface(X, Y, Z, cmap='magma', zorder=1)
+    ax.scatter(ext, vel, drag_p_airden, s=1, color='lime', zorder=2)
+
+    ax.set_xlabel('Extension')
+    ax.set_ylabel('Velocity')
+    ax.set_zlabel('Drag / Air Density')
+    ax.set_title('Drag')
+
+    fig.colorbar(surf, ax=ax)
     plt.show()
 
