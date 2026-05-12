@@ -64,6 +64,10 @@ STD_THRUST_CSV = os.path.join(_base_path, "..", "data", "motor_data", "N3300R", 
 # Current motor burnout at 4.455 to 4.519 seconds
 THRUST_BURNOUT = 4.52
 
+# The height below which the angle can't change
+# It is made up because I don't care
+RAIL_HEIGHT = 30
+
 
 # returns the estimated amount of force at a specific point in time
 def _thrust_init(thrust_filepath=STD_THRUST_CSV):
@@ -152,4 +156,7 @@ def total_mass(t):
 # Note, needs to operate on lists as well
 def meters2feet(m):
     return m * METERS_TO_FEET
+
+def feet2meters(m):
+    return m * FEET_TO_METERS
 

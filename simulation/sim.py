@@ -6,8 +6,8 @@ import scipy
 import os
 
 from integration import scipyintegrate
-from interpolation import drag_p_airden_fn
-from equations_n_constants import air_density, thrust, total_mass, mach2v, v2mach, gravity_at_alt, GOAL_HEIGHT_METERS, EXTS
+from interpolation import get_drag_p_airden
+from equations_n_constants import RAIL_HEIGHT, air_density, thrust, total_mass, mach2v, gravity_at_alt, GOAL_HEIGHT_METERS, EXTS
 from equations_n_constants import THRUST_BURNOUT
 
 ##################CD is actually just drag rn
@@ -15,53 +15,59 @@ from equations_n_constants import THRUST_BURNOUT
 # physical constants and simple equations imported from data_utilities.equations_n_constants
 # TODO add comments
 
+HEIGHT_INDEX   = 0
+VELOCITY_INDEX = 1
+ANGLE_INDEX    = 2
+
 class Sim():
     def __init__(self):
-        self.exts = EXTS
-        self.drag_p_airden = [drag_p_airden_fn(ext) for ext in self.exts]
-
-    def get_exts(self):
-        return self.exts
+        self.ext          = None
+        self._integration = None
 
 
-    def drag(self, h, v, theta, exti, t):
-        # If we're pre-burnout, we keep the blades in
-        # If the angle is too big we have to retract the blades
-        if t < THRUST_BURNOUT or theta > np.deg2rad(20):
-            exti = 0
-        next_dragdata = air_density(h) * self.drag_p_airden[exti](v2mach(v))
+    def drag(self, h, v, ext):
+        next_dragdata = air_density(h) * get_drag_p_airden(ext, v)
         return next_dragdata
 
 
     # acceleration=-(A*rho*Cd*v^2+thrust)/m+g
     # TODO add derivation documentation
-    def accel(self, t, u, exti):
+    def accel(self, t, u, ext):
         h, v, theta = u
         # TODO np.cos(theta)*gravity_at_alt(h) is correct, whiteboarded work needs to be documented.
-        return ((-self.drag(h, v, theta, exti, t) + thrust(t)) / total_mass(t)) + np.cos(theta)*gravity_at_alt(h)
+        return ((-self.drag(h, v, ext) + thrust(t)) / total_mass(t)) + np.cos(theta)*gravity_at_alt(h)
     
     
     # FDS bs
     # the derivative of the state space
     # forcing function f for finite difference scheme accounting for extention
-    # TODO: numerical trick still suspicious, some testing indicates it may be causing issues
-    def f_w_ext(self, t, u, exti): 
+    def f_w_ext(self, t, u, ext): 
         h, v, theta = u
         # this is a numerical trick to make sure that the code doesn't break at t=0
         # backward_euler_dt = 0.0000005
-        acceleration = self.accel(t, u, exti)
-        if v < .01:
-            return np.array([v * cos(theta), acceleration, -gravity_at_alt(h) * sin(theta) / (v + 0.005)])
+        acceleration = self.accel(t, u, ext)
+        
+        v_eps = 0.001
+        # Angle struggles during launch since v is small
+        #  I don't really care so this may be totally wrong
+        if h < RAIL_HEIGHT:
+            dzenith = 0.0
+        # I have no idea if this is correct numerical stuff
+        #  basically this clamps v to not be smaller than v_eps
+        #  and if it is then sets it to v_eps preserving the sign
+        elif np.abs(v) < v_eps:
+            v_sign = 1 if v >= 0 else -1
+            dzenith = -gravity_at_alt(h) * sin(theta) / (v_sign * v_eps)
         else:
-            return np.array(
-                [
-                    v * cos(theta),  # Change in Height
-                    acceleration,  # Change in Velocity
-                    # acceleration term is to avoid divides by zero
-                    # -gravity_at_alt(h) * sin(theta) / (v + acceleration*backward_euler_dt),  # Change in Zenith (angle)
-                    -gravity_at_alt(h) * sin(theta) / (v),  # Change in zenith angle
-                ]
-        )
+            dzenith = -gravity_at_alt(h) * sin(theta) / v
+
+        return np.array([
+            v * cos(theta),  # Change in Height
+            acceleration,  # Change in Velocity
+            # acceleration term is to avoid divides by zero
+            # -gravity_at_alt(h) * sin(theta) / (v + acceleration*backward_euler_dt),  # Change in Zenith (angle)
+            dzenith
+        ])
 
 
     def run_scipy(
@@ -72,9 +78,10 @@ class Sim():
         t0 = 0,
         u0 = np.array([0, 0]),  # u[0]=height u[1]=velocity
     ):
+        ext = EXTS[exti]
         # Forcing function needed for scipu RK45
         def f(t, u):
-            return self.f_w_ext(t, u, exti)
+            return self.f_w_ext(t, u, ext)
             
         return scipyintegrate(u0, scipy.integrate.RK45, f, t, dt, t0=t0)
 
@@ -82,6 +89,43 @@ class Sim():
     def apogee(self, exti, u0, t, t0, dt=0.05):
         f, time = self.run_scipy(dt=dt, exti=exti, t=t, t0=t0, u0=u0)
         return np.max(f[:, 0])
+
+
+    @property
+    def curr_time(self):
+        if self._integration is None:
+            raise Exception("Must call set state before getting time")
+
+        return self._integration.t
+
+
+    @property
+    def curr_state(self):
+        if self._integration is None:
+            raise Exception("Must call set state before getting state")
+
+        return self._integration.y
+
+
+    # Angle doesn't seem to work (maybe during launch)
+    def set_state(self, state=(0.0, 0.0, 0.0), time=0.0, max_step=0.1):
+        self.ext = 0
+
+        self._integration = scipy.integrate.RK45(
+            lambda t, u: self.f_w_ext(t, u, self.ext),
+            time,
+            state,
+            t_bound=np.inf,
+            max_step=max_step
+        )
+
+
+    # Returns the timestep size
+    def step_state(self):
+        if self._integration is None:
+            raise Exception("Must call set state before stepping state")
+
+        self._integration.step()
 
 
     def runsweep(self, headless=False, exti=(3,), u0=(np.array([0, 0, 1 / 15]),), t0=(THRUST_BURNOUT,)):
@@ -99,11 +143,11 @@ class Sim():
             # plotting
             fig, (ax1_h, ax2_v, ax3_angle,axti) = plt.subplots(1,4)
             for i in range(len(exti)):
-                ax1_h.plot(time[i], u[i][:, 0], label=f"ext={self.exts[exti[i]]}, angle={u0[i][2]*180/pi:.2f}")
+                ax1_h.plot(time[i], u[i][:, 0], label=f"ext={EXTS[exti[i]]}, angle={u0[i][2]*180/pi:.2f}")
 
-                ax2_v.plot(time[i], u[i][:, 1], label=f"ext={self.exts[exti[i]]} angle={u0[i][2]*180/pi:.2f}")
-                ax3_angle.plot(time[i], u[i][:, 2] * 180/pi, label=f"ext={self.exts[exti[i]]} angle={u0[i][2]*180/pi:.2f}")
-                axti.plot(time[i], np.array([0 if (time[i][t] < THRUST_BURNOUT or u[i][t,2] * 180 / pi > 20) else self.exts[exti[i]] for t in range(len(time[i]))]), label=f"ext={self.exts[exti[i]]} angle={u0[i][2]*180/pi:.2f}")
+                ax2_v.plot(time[i], u[i][:, 1], label=f"ext={EXTS[exti[i]]} angle={u0[i][2]*180/pi:.2f}")
+                ax3_angle.plot(time[i], u[i][:, 2] * 180/pi, label=f"ext={EXTS[exti[i]]} angle={u0[i][2]*180/pi:.2f}")
+                axti.plot(time[i], np.array([0 if (time[i][t] < THRUST_BURNOUT or u[i][t,2] * 180 / pi > 20) else EXTS[exti[i]] for t in range(len(time[i]))]), label=f"ext={EXTS[exti[i]]} angle={u0[i][2]*180/pi:.2f}")
             ax1_h.plot(time[i], np.full(len(time[i]), GOAL_HEIGHT_METERS), label="Goal height")
             ax1_h.legend()
             ax1_h.set_xlabel("time (s)")
@@ -136,20 +180,20 @@ class Sim():
         if not headless:
             # plotting
             fig, (ax1_h, ax2_v, ax3_angle) = plt.subplots(1,3)
-            ax1_h.plot(time, u[:, 0], label=f"ext={self.exts[exti]}, angle={u0[2]:.2f}")
+            ax1_h.plot(time, u[:, 0], label=f"ext={EXTS[exti]}, angle={u0[2]:.2f}")
             ax1_h.plot(time, np.full(len(time), GOAL_HEIGHT_METERS), label="Goal height")
             ax1_h.legend()
             ax1_h.set_xlabel("time (s)")
             ax1_h.set_ylabel("Height(m)")
             ax1_h.set_title("Flight Altitude Graph")
 
-            ax2_v.plot(time, u[:, 1], label=f"ext={self.exts[exti]} angle={u0[2]:.2f}")
+            ax2_v.plot(time, u[:, 1], label=f"ext={EXTS[exti]} angle={u0[2]:.2f}")
             ax2_v.legend()
             ax2_v.set_xlabel("time (s)")
             ax2_v.set_ylabel("velocity(m/s)")
             ax2_v.set_title("Flight Velocity Graph")
 
-            ax3_angle.plot(time, u[:, 2], label=f"ext={self.exts[exti]} angle={u0[2]:.2f}")
+            ax3_angle.plot(time, u[:, 2], label=f"ext={EXTS[exti]} angle={u0[2]:.2f}")
             ax3_angle.legend()
             ax3_angle.set_xlabel("time (s)")
             ax3_angle.set_ylabel("radians")
@@ -172,8 +216,8 @@ class Sim():
         return self.apogee(exti,u0,200,t0=THRUST_BURNOUT)-GOAL_HEIGHT_METERS
 
     def binary_search(self, h, a, exti, tol=0.001):
-        va=-1.0
-        vb=5
+        va=0.0
+        vb=1.5
         # If we are always overshooting then our best velocity is 0
         if (self.eval(va,h,a,exti))>0:
             return va
@@ -199,7 +243,7 @@ class Sim():
         for hi in range(len(heights)):
             for ai in range(len(angles)):
                 optimal_vel_list=[]#optimal velocity given a specfic height to switch beavs extension
-                for exti in range(len(self.exts)):
+                for exti in range(len(EXTS)):
                     h=heights[hi]
                     a=angles[ai]
                     optimal_vel_list+=[self.binary_search(h, a, exti, tol)]
@@ -221,7 +265,7 @@ class Sim():
 
             np.save(os.path.join(base_path, "angles.npy"), angles)
             np.save(os.path.join(base_path, "heights.npy"), heights)
-            np.save(os.path.join(base_path, "exts.npy"), self.exts)
+            np.save(os.path.join(base_path, "exts.npy"), EXTS)
             np.save(os.path.join(base_path, "lookup.npy"), lookup)
 
         return lookup
@@ -250,7 +294,7 @@ if __name__ == "__main__":
     tol=0.00001
     print("Angles:",angles)
     print("Heights:",heights)
-    print("Exts:",sim.get_exts())
+    print("Exts:",EXTS)
     lookup=sim.lookup_table(angles, heights, tol, save=True)
     print("Lookup:")
     print(np.array(lookup))
