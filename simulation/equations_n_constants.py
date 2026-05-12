@@ -157,3 +157,6 @@ def total_mass(t):
 def meters2feet(m):
     return m * METERS_TO_FEET
 
+def feet2meters(m):
+    return m * FEET_TO_METERS
+

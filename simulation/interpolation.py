@@ -2,13 +2,13 @@ from scipy.interpolate import RBFInterpolator
 import numpy as np
 import matplotlib.pyplot as plt
 
-from equations_n_constants import air_density, mach2v
+from equations_n_constants import air_density, mach2v, feet2meters
 from utilities import read_drag_data_np
 
-ext, mach, all_drag, alt = np.array(read_drag_data_np(col_names=["Extension", "Mach", "Drag of all", "Altitude"]))
+ext, mach, all_drag, alt_ft = np.array(read_drag_data_np(col_names=["Extension", "Mach", "Drag of all", "Altitude"]))
 
 vel = mach2v(mach)
-drag_p_airden = all_drag / air_density(alt)
+drag_p_airden = all_drag / air_density(feet2meters(alt_ft))
 
 # This is a function (or callable)
 # It's args are extension and velocity
