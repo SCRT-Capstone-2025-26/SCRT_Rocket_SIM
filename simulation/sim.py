@@ -127,16 +127,15 @@ class Sim():
         self._integration.step()
 
 
-    def runsweep(self, headless=False, exti=(3,), u0=(np.array([0, 0, 1 / 15]),), t0=(THRUST_BURNOUT,)):
+    def runsweep(self, headless=False, exti=(3,), u0=(np.array([0, 0, 1 / 15]),), t0=(THRUST_BURNOUT,), dt=[]):
         # initial conditions
         t=200
-        dt = 0.05
 
         # run code
         u=[[] for i in range(len(exti))]
         time=[[] for i in range(len(exti))]
         for i in range(len(exti)):
-            u[i], time[i] = self.run_scipy(dt=dt, exti=exti[i], t=t, u0=u0[i], t0=t0[i])
+            u[i], time[i] = self.run_scipy(dt=dt[i], exti=exti[i], t=t, u0=u0[i], t0=t0[i])
 
         if not headless:
             # plotting
@@ -171,7 +170,7 @@ class Sim():
     def run(self, headless=False, exti=3, u0=np.array([0, 0, 1 / 15]), t0=THRUST_BURNOUT):
         # initial conditions
         # T=200
-        dt = 0.05
+        dt = 5
 
         # run code
         u, time = self.run_scipy(dt, u0=u0, exti=exti, t0=t0)
@@ -231,6 +230,7 @@ class Sim():
                 va=mid_v
             else:
                 vb=mid_v
+        # print(vb, va)
         return mid_v
 
 
@@ -271,8 +271,11 @@ class Sim():
 
 
 if __name__ == "__main__":
+    # with cProfile.Profile() as pr:
     sim = Sim()
-    # sim.runsweep(exti=[3,3], u0=[np.array([0, 0, 20 * pi / 180]),np.array([0, 0, 0])], t0=[0,0])
+    sim.runsweep(exti=[0, 15], u0=[np.array([800, 261, 0]),np.array([2900, 54, 0.35])], t0=[THRUST_BURNOUT, THRUST_BURNOUT], dt=[0.1, 0.1])
+    plt.show()
+    # sim.runsweep(exti=[0, 15], u0=[np.array([0, 0, np.deg2rad(4)]),np.array([0, 0, np.deg2rad(4)])], t0=[0,0])
     # plt.show()
     # sim.runsweep(exti=[0,3], u0=[np.array([0, 0, 0]),np.array([0, 0, 0])], t0=[0,0])
     # plt.show()
@@ -283,7 +286,7 @@ if __name__ == "__main__":
     # Var angle to about 20degrees or 0.35 radians
 
     # Slow
-    heights=[100*i+800 for i in range(22)]
+    heights=[100*i+800 for i in range(17)]
     angles=[0.00, 0.04, 0.08, 0.12, 0.16, 0.20, 0.28, 0.35]
 
     # Fast
